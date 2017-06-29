@@ -11,7 +11,6 @@ from keras import backend as K
 
 EPISODES = 50000
 
-
 class TestAgent:
     def __init__(self, action_size):
         self.state_size = (84, 84, 4)
