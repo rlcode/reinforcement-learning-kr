@@ -13,10 +13,11 @@ import gym
 
 EPISODES = 50000
 
+
 # 브레이크아웃에서의 DQN 에이전트
 class DQNAgent:
     def __init__(self, action_size):
-        self.render = False
+        self.render = True
         self.load_model = False
         # 상태와 행동의 크기 정의
         self.state_size = (84, 84, 4)
@@ -108,6 +109,9 @@ class DQNAgent:
 
     # 리플레이 메모리에서 무작위로 추출한 배치로 모델 학습
     def train_model(self):
+        if self.epsilon > self.epsilon_end:
+            self.epsilon -= self.epsilon_decay_step
+
         mini_batch = random.sample(self.memory, self.batch_size)
 
         history = np.zeros((self.batch_size, self.state_size[0],
@@ -192,9 +196,6 @@ if __name__ == "__main__":
             global_step += 1
             step += 1
 
-            if agent.epsilon > agent.epsilon_end:
-                agent.epsilon -= agent.epsilon_decay_step
-
             # 바로 전 4개의 상태로 행동을 선택
             action = agent.get_action(history)
             # 1: 정지, 2: 왼쪽, 3: 오른쪽
@@ -223,7 +224,7 @@ if __name__ == "__main__":
             # 샘플 <s, a, r, s'>을 리플레이 메모리에 저장 후 학습
             agent.append_sample(history, action, reward, next_history, dead)
 
-            if len(self.memory) >= self.train_start:
+            if len(agent.memory) >= agent.train_start:
                 agent.train_model()
 
             # 일정 시간마다 타겟모델을 모델의 가중치로 업데이트
