@@ -41,7 +41,7 @@ class DQNAgent:
         self.update_target_model()
 
         if self.load_model:
-            self.model.load_weights("./save_model/cartpole_dqn.h5")
+            self.model.load_weights("./save_model/cartpole_dqn_trained.h5")
 
     # 상태가 입력 큐함수가 출력인 인공신경망 생성
     def build_model(self):
@@ -167,4 +167,4 @@ if __name__ == "__main__":
 
         # save the model
         if e % 50 == 0:
-            agent.model.save_weights("./save_model/cartpole_dqn.h5")
+            agent.model.save_weights("./save_model/cartpole_dqn_trained.h5")

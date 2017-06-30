@@ -30,8 +30,8 @@ class A2CAgent:
         self.critic = self.build_critic()
 
         if self.load_model:
-            self.actor.load_weights("./save_model/cartpole_actor.h5")
-            self.critic.load_weights("./save_model/cartpole_critic.h5")
+            self.actor.load_weights("./save_model/cartpole_actor_trained.h5")
+            self.critic.load_weights("./save_model/cartpole_critic_trained.h5")
 
     # approximate policy and value using Neural Network
     # actor: state is input and probability of each action is output of model
@@ -131,5 +131,5 @@ if __name__ == "__main__":
 
         # save the model
         if e % 50 == 0:
-            agent.actor.save_weights("./save_model/cartpole_actor.h5")
-            agent.critic.save_weights("./save_model/cartpole_critic.h5")
+            agent.actor.save_weights("./save_model/cartpole_actor_trained.h5")
+            agent.critic.save_weights("./save_model/cartpole_critic_trained.h5")
