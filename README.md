@@ -44,7 +44,7 @@ pip install -r requirements.txt
 - [Deep Q Network](./2-cartpole/1-dqn)
 - [Double Deep Q Network](./2-cartpole/2-double-dqn)
 - [Policy Gradient](./2-cartpole/3-reinforce)
-- [Actor Critic (A2C)](./2-cartpole/4-actor-critic)
+- [Actor Critic (A2C)](./2-cartpole/2-actor-critic)
 - [Asynchronous Advantage Actor Critic (A3C)](./2-cartpole/5-a3c)
 
 **Atari** - 딥러닝을 응용하여 좀더 복잡한 Atari게임을 마스터하는 에이전트 만들기
