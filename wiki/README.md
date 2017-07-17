@@ -6,7 +6,7 @@
 
 해당 링크를 누르면 환경 설치에 대한 상세 가이드를 보실 수 있습니다.
 
-- **윈도우 [[link]](./)**
+- **윈도우 [[link]](./install_guide_window.md)**
 - **리눅스(우분투) [[link]](./install_guide_ubuntu.md)**
 - **(맥(osx) [[link]](./install_guide_osx.md)**
 
