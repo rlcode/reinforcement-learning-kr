@@ -58,6 +58,7 @@
    ​
 
 - rl_book 프로젝트가 생성되었습니다.
+
   <img src='./img/win_pycharm_project2.png'>
 
   ​
@@ -67,11 +68,13 @@
   settings에서 파이참의 다양한 설정을 할 수 있습니다.
 
   현재 파이참 테마는 Darcula로 설정되어있습니다. 사용자에 따라 원하는 테마를 설정할 수 있습니다.
+  
   <img src='./img/win_pycharm_settings.png'>
 
   ​
 
 - Setting 왼쪽의 Project : rl_book(프로젝트 명)을 클릭하면 현재 프로젝트의 파이썬 버전과 인터프리터를 설정할 수 있습니다. virtualenv(가상환경)을 생성할 수 있고 현재 프로젝트에 설치된 파이썬 패키지들의 버전들을 확인 할 수 있습니다.
+
    <img src='./img/win_pycharm_setting2.png'>
 
 
@@ -80,6 +83,7 @@
 
 - Openai gym과 윈도우 환경에서 openai gym설치 시 카트폴은 기본적인 패키지 설치로 실행이 가능하지만 아타리 브레이크 아웃은 별도로 설치를 해줘야 합니다. 아타라 브레이크아웃은 Github 저장소에서 다운로드하여 설치해야 하므로 Git을 설치해야 합니다.  
   - 링크 : https://git-scm.com/download
+  
      <img src="./img/win_git.png">
 
   ​
