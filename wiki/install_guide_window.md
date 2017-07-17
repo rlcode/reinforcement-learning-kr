@@ -299,8 +299,6 @@
 
   - Github 레포지토리 : https://github.com/rlcode/reinforcement-learning-kr
 
-  그리고 다음 명령어로 패키지들을 설치합니다.
-
   ```shell
   pip install -r requirement.txt
   ```
