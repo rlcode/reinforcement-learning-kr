@@ -186,7 +186,7 @@
   3. <고급 탭> 이동
   4. <환경 변수> 클릭
 
-  <img src='./img/win_setting.png' height=100>
+  <img src='./img/win_setting.png' height=500>
 
 
 
