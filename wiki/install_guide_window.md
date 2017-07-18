@@ -36,6 +36,7 @@
   링크 : [http://www.lfd.uci.edu/~gohlke/pythonlibs/](http://www.lfd.uci.edu/~gohlke/pythonlibs/)
 
 <img src="./img/numpy_install.png">
+
 - 바이너리 파일(확장자 whl)을 윈도우 명령어창(cmd)에서 pip를 통해 설치합니다.
 
 <img src="./img/numpy_install3.png">
@@ -53,6 +54,7 @@
    ​
 
 - 프로젝트 생성 화면입니다. 파이참에서 기본으로 제공하는 PycharmProjects 디렉토리에 rl_book이라는 이름으로 프로젝트를 생성하겠습니다.
+
    <img src="./img/win_pycharm_project.png">
 
    ​
@@ -153,6 +155,7 @@
 
   - 다운로드 링크 : http://www.msys2.org/
 
+
   <img src='./img/win_msys2.png'>
 
 
@@ -190,7 +193,7 @@
   3. <고급 탭> 이동
   4. <환경 변수> 클릭
 
-  <img src='./img/win_setting.png' height=500>
+  <p align="center"><img src='./img/win_setting.png' height=500></p>
 
 
 
@@ -321,4 +324,4 @@
 
 - 아타리 브레이크 아웃 실행화면 입니다.
 
-  <img src='./img/win_breakout2.png'>
+  <p align="center"><img src='./img/win_breakout2.png'></p>
