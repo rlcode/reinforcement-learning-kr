@@ -8,7 +8,7 @@
 
 - **윈도우 [[link]](./install_guide_window.md)**
 - **리눅스(우분투) [[link]](./install_guide_ubuntu.md)**
-- **(맥(osx) [[link]](./install_guide_osx.md)**
+- **맥(osx) [[link]](./install_guide_osx.md)**
 
 > #### 윈도우는 Openai에서 공식적인 설치 가이드를 제공하고 있지 않습니다. 
 > #### 그래서 Openai gym 버전에 따라 설치가 안될 수 있습니다. 그리고 다른 환경과 달리 설치방법이 다소 까다롭습니다. 
