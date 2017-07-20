@@ -22,7 +22,7 @@ class SARSAgent:
 
     # 입실론 탐욕 정책에 따라서 행동을 반환
     def get_action(self, state):
-        if np.random.rand() > self.epsilon:
+        if np.random.rand() < self.epsilon:
             # 무작위 행동 반환
             action = np.random.choice(self.actions)
         else:
