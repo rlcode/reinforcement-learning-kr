@@ -28,11 +28,8 @@
 
 **설치는 다음과 같은 순서로 진행합니다. **
 
-1. 파이참 공식 홈페이지 링크에서 파이참 커뮤니티버전을 다운로드합니다.
+1. 파이참 공식 홈페이지[[Link]](https://www.jetbrains.com/pycharm/download/#section=linux) 링크에서 파이참 커뮤니티버전을 다운로드합니다.
 
-   ​
-
-   링크: [https://www.jetbrains.com/pycharm/download/#section=linux](https://www.jetbrains.com/pycharm/download/#section=linux)
 
 <p align="center"><img src="./install_image/pycharm_community.png"/></p>
 
@@ -111,15 +108,14 @@
 10. 파이참이 정상적으로 설치되었는지 확인하기 위해 파이썬 스크립트 파일을 생성해봅니다. 가장 간단한 예제인 `“Hello World”`를 실행하기 위해 다음과 같이 hello_world.py 파일을 생성합니다.
  ​
 
-  <p align="center"><img src="./install_image/hello_world_ubuntu.png" style="zoom:100%"></p>
-  ​
+ <p align="center"><img src="./install_image/hello_world_ubuntu.png" style="zoom:100%"></p>
+ ​
 
 11. 생성한 파일에 마우스 커서를 놓고 오른쪽 버튼을 누르면 여러 항목이 나옵니다. 그 중에서 “Run ‘hello_world’” 버튼을 누르면 hello_world.py 파일을 실행할 수 있습니다. 
     ​
 
    <p align="center"><img src="./install_image/run_hello_world.png" style="zoom:100%"></p>
 
-    ​
 
 
 12. hello_world.py 파일 안에 다음 코드를 입력합니다.
@@ -134,12 +130,12 @@
 
   ​
 
-  <p align="center"><img src="./rinstall_image/console_hello_world.png" style="zoom:70%"></p>
+  <p align="center"><img src="./install_image/console_hello_world.png" style="zoom:70%"></p>
 
   ​
 
 
-###Virtualenv(가상환경) 사용법 :happy: 
+### Virtualenv(가상환경) 사용법 
 
 여기까지가기본적인 파이참의 환경설정입니다. 한 컴퓨터에서 여러가지 프로젝트를 진행할 경우에 프로젝트마다 개발환경이다를 수 있습니다. 서로 다른 프로젝트의 개발환경이 다를 경우에 사용자는 상당한 불편을 겪을 수 있습니다. 따라서 프로젝트별로 개발환경을 분리해서 관리하는 것은 상당한 장점이 있는데 그 기능을 하는 것이 VirtualEnv입니다. VirtualEnv를 사용하면 이 책의 프로젝트만을위한 가상 개발환경을 만들 수 있습니다. 
 
@@ -179,7 +175,7 @@
 
    ​
 
-### 1.3 오픈에이아이 설치 및 테스트
+### 1.3 오픈에이아이 설치
 
 2016년에 오픈에이아이(OpenAI)라는 회사가 세워졌습니다. 이 회사의 목표는 인공지능 기술을 전 세계에공개해서 더 안전한 인공지능을 만들어가며 더 많은 분야에 인공지능을 도입하는 것입니다. 오픈에이아이 짐(Gym)는 오픈에이아이에서 만든 환경인데여기서 여러가지 인공지능 알고리즘을 테스트 해볼 수 있습니다. 
 
@@ -217,6 +213,10 @@ $ pip3 install -e .[all]
 
 
 
+### 1.4 예제 테스트
+
+### 1.4.1 카트폴
+
 오픈에이아이 짐이 정상적으로 설치되었는지 확인하기 위해서 간단한 예제를 실행해봅니다. 오픈에이아이 짐의 가장 간단한 예제는 카트폴(CartPole)입니다. 카트폴은 카트에 진자가 달린 형태로 이 문제의 목표는 카트를 움직여서 그 반동으로 진자를 세우는 것입니다. 테스트할 때는 그냥 아무 입력도 카트폴에 주지 않은 상태로 오픈에이아이 짐이 제대로 실행되는지만 확인할 것입니다. 
 
 `CartPole.py` 파일을 생성하고 아래와 같이 입력합니다.
@@ -238,3 +238,32 @@ for _ in range(1000):
 
 
    <p align="center"><img src="./install_image/cartpole_exam.png" style="zoom:80%"></p>
+
+
+
+### 1.4.2 아타리 브레이크아웃
+
+위에서 오픈에이아이를 전체 설치 했기 때문에 아타리 브레이크 아웃 예제를 테스트 해볼 수 있습니다.
+
+브레이크 아웃을 테스트 하기 위한 테스트는 rlcode 깃헙 레포지토리에 있는 ``3-atari/1-breakout/breakout_dqn.py`` 예제를 사용하겠습니다. 
+
+우선 해당 파이썬 코드가 있는 디렉토리로 이동합니다.
+
+```shell
+$cd 3-atari/1-breakout
+```
+
+``breakout_dqn.py`` 코드는 카트폴 테스트 예제에 비해  코드량이 많으므로 전체는 생략하겠습니다.
+
+다음 명령어로 ``breakout_dqn.py`` 를 실행합니다.
+
+```shell
+$python breakout_dqn.py
+```
+
+dqn알고리즘을 실행하기 때문에 컴퓨터 사양에 따라 렌더링되는 시간이 다를 수 있습니다.
+
+아래 그림은 실행화면 입니다.
+
+  <p align="center"><img src="./install_image/atari_breakout.png" style="zoom:80%"></p>
+

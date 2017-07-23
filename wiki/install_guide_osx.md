@@ -4,7 +4,7 @@
 
 ### 1.1 파이썬 3.5 설치 및 환경 설정
 
-파이썬다운로드 페이지[[3\]](#_ftnref3)로접속하면 다음과 같은 화면이 나옵니다.
+파이썬 다운로드 페이지[[Link]](https://www.python.org/downloads/release/python-350/)로 접속하면 다음과 같은 화면이 나옵니다.
 
    <p align="center"><img src="./install_image/python_download.png" style="zoom:80%"></p>
 
@@ -22,7 +22,7 @@
 
    ​
 
-   <p alien="center"><img src="./rinstall_image/python3_terminal.jpg" style="zoom:100%"></p>
+   <p alien="center"><img src="./install_image/python3_terminal.jpg" style="zoom:100%"></p>
 
    ​
 
@@ -30,7 +30,7 @@
 
 파이참의 설치 및 환경 설정은 다음과 같은 순서로 진행합니다. 
 
-1. 파이참홈페이지에 접속하여 커뮤니티버전을 다운로드합니다. 
+1. 파이참 홈페이지[[Link]](https://www.jetbrains.com/pycharm/)에 접속하여 커뮤니티버전을 다운로드합니다. 
 
 2. 다운로드가 완료된 파일을 실행하고아래 그림에서 왼쪽 PyCharm CE 아이콘을 오른쪽 폴더 아이콘으로 드래그하면 설치가 완료됩니다.
 
@@ -87,7 +87,7 @@
 
 2016년에 오픈에이아이(OpenAI)라는 회사가 세워졌습니다. 이 회사의 목표는 인공지능 기술을 전 세계에공개해서 더 안전한 인공지능을 만들어가며 더 많은 분야에 인공지능을 도입하는 것입니다. 오픈에이아이 짐(Gym)는 오픈에이아이에서 만든 환경인데여기서 여러가지 인공지능 알고리즘을 테스트 해볼 수 있습니다. 
 
-오픈에이아이짐의 코드는 모두 오픈에이아이의 깃허브(Github)[[2\]](#_ftn1)에업로드되어있습니다.
+오픈에이아이짐의 코드는 모두 오픈에이아이의 깃허브(Github)[[Link]](https://github.com/openai/gym)에업로드되어있습니다.
 
    <p align="center"><img src="./install_image/openai_github.png" style="zoom:80%"></p>
 
@@ -173,13 +173,3 @@ dqn알고리즘을 실행하기 때문에 컴퓨터 사양에 따라 렌더링�
 아래 그림은 실행화면 입니다.
 
   <p align="center"><img src="./install_image/atari_breakout.png" style="zoom:80%"></p>
-
-
-
-------
-
-[[1\]](#_ftnref1) https://www.jetbrains.com/pycharm/
-
-[[2\]](#_ftnref2) https://github.com/openai/gym
-
-[[3\]](#_ftnref3) https://www.python.org/downloads/release/python-350/
