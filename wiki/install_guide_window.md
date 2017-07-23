@@ -4,7 +4,7 @@
 
 그래서 윈도우 사용자는 우분투와 맥 운영체제와 달리 아타리 브레이크 아웃을 실행시키기 위한 추가 환경 설치를 해야합니다.
 
-윈도우에서 책에 있는 예제를 실행시키기 위해 다음 항목들을 설치해야 합니다.
+윈도우에서 책에 있는 예제를 실행시키기 위해 다음 항목들을 필요로 합니다.
 
 - python 3.5
 - Numpy, scipy
@@ -36,6 +36,7 @@
   링크 : [http://www.lfd.uci.edu/~gohlke/pythonlibs/](http://www.lfd.uci.edu/~gohlke/pythonlibs/)
 
 <img src="./img/numpy_install.png">
+
 - 바이너리 파일(확장자 whl)을 윈도우 명령어창(cmd)에서 pip를 통해 설치합니다.
 
 <img src="./img/numpy_install3.png">
@@ -53,11 +54,13 @@
    ​
 
 - 프로젝트 생성 화면입니다. 파이참에서 기본으로 제공하는 PycharmProjects 디렉토리에 rl_book이라는 이름으로 프로젝트를 생성하겠습니다.
+
    <img src="./img/win_pycharm_project.png">
 
    ​
 
 - rl_book 프로젝트가 생성되었습니다.
+
   <img src='./img/win_pycharm_project2.png'>
 
   ​
@@ -67,11 +70,13 @@
   settings에서 파이참의 다양한 설정을 할 수 있습니다.
 
   현재 파이참 테마는 Darcula로 설정되어있습니다. 사용자에 따라 원하는 테마를 설정할 수 있습니다.
+  
   <img src='./img/win_pycharm_settings.png'>
 
   ​
 
 - Setting 왼쪽의 Project : rl_book(프로젝트 명)을 클릭하면 현재 프로젝트의 파이썬 버전과 인터프리터를 설정할 수 있습니다. virtualenv(가상환경)을 생성할 수 있고 현재 프로젝트에 설치된 파이썬 패키지들의 버전들을 확인 할 수 있습니다.
+
    <img src='./img/win_pycharm_setting2.png'>
 
 
@@ -80,6 +85,7 @@
 
 - Openai gym과 윈도우 환경에서 openai gym설치 시 카트폴은 기본적인 패키지 설치로 실행이 가능하지만 아타리 브레이크 아웃은 별도로 설치를 해줘야 합니다. 아타라 브레이크아웃은 Github 저장소에서 다운로드하여 설치해야 하므로 Git을 설치해야 합니다.  
   - 링크 : https://git-scm.com/download
+  
      <img src="./img/win_git.png">
 
   ​
@@ -149,6 +155,7 @@
 
   - 다운로드 링크 : http://www.msys2.org/
 
+
   <img src='./img/win_msys2.png'>
 
 
@@ -186,7 +193,7 @@
   3. <고급 탭> 이동
   4. <환경 변수> 클릭
 
-  <img src='./img/win_setting.png' height=100>
+  <p align="center"><img src='./img/win_setting.png' height=500></p>
 
 
 
@@ -299,8 +306,6 @@
 
   - Github 레포지토리 : https://github.com/rlcode/reinforcement-learning-kr
 
-  그리고 다음 명령어로 패키지들을 설치합니다.
-
   ```shell
   pip install -r requirement.txt
   ```
@@ -319,4 +324,4 @@
 
 - 아타리 브레이크 아웃 실행화면 입니다.
 
-  <img src='./img/win_breakout2.png'>
+  <p align="center"><img src='./img/win_breakout2.png'></p>
