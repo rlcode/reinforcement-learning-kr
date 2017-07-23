@@ -22,7 +22,7 @@
 
    ​
 
-   <p alien="center"><img src="./rinstall_image/python3_terminal.jpg" style="zoom:100%"></p>
+   <p alien="center"><img src="./install_image/python3_terminal.jpg" style="zoom:100%"></p>
 
    ​
 
