@@ -1,10 +1,10 @@
-## 개발 환경 설정 : 리눅스 (우분투)
+## 개발 환경 설정 1: 리눅스 (우분투)
 
 리눅스는 소스코드가 공개된 대표적인 오픈소스 운영체제입니다. 리눅스는 모든 소스가 공개되어 있으므로 정말 많은 종류가 있습니다. 그중에서도 우분투(Ubuntu)가 가장 넓은 사용자를 가진 배포판입니다. 매년 상반기 하반기 우분투 재단에서 새로운 버전을 배포하는데 이 책에서는 14년 상반기에 배포한 우분투 14.04 버전을 사용할 것입니다. 우분투 14.04가 설치되어 있다는 가정에 따라 이후의 개발환경 설정을 설명할 것입니다.
 
 
 
-###  우분투 파이썬의 버전 확인
+### 1.1 우분투 파이썬의 버전 확인
 
 리눅스의 장점은 바로 파이썬(Python)이 설치가 기본적으로 되어 있다는 것입니다. 파이썬은 2.X 버전과 3.X버전이 있는데 이 책에서는 `파이썬 3.5버전`을 사용할 것입니다. 바탕화면에서 `Ctrl+Alt+t`를 누르면 터미널 창이 뜨는데
 여기에 다음 명령어를 치고 엔터를 누르면 설치된 파이썬의 버전을 확인할 수 있습니다.
@@ -17,16 +17,16 @@
 
 
 
-### 파이참 커뮤니티 설치 및 환경 설정
+### 1.2 파이참 커뮤니티 설치 및 환경 설정
 
 앞으로 강화학습 에이전트를 만들고 가상 환경에서 에이전트를 학습시킬 것입니다. 그러기 위해 코드를 짜고 편집하는
 환경이 필요한데 그러한 환경을 IDE(interface Development Environment)라고 합니다. IDE에는 많은 종류가 있지만 이 책에서는 파이참(Pycharm)을 파이썬을 위한 IDE로 사용할 것입니다. 
 
-파이참의 설치는 파이참의 공식 홈페이지[[1\]](https://www.jetbrains.com/pycharm/)를통해서 할 수 있습니다. 홈페이지에서 윈도우, 리눅스, 맥 OS 버전의 파이참을 다운로드 할 수 있습니다. 파이참은 유료 버전인 `프로페셔녈(PyCharm ProfessionalEdition)`과, 무료 버전인 `커뮤니티(PyCharm Community Edition)`으로 나뉩니다. 앞으로 에이전트를 개발할 때 `파이참 커뮤니티`를 사용할 것이므로 커뮤니티 버전을 기준으로 설치법을 설명할 것입니다.
+파이참의 설치는 파이참의 공식 홈페이지[[1\]](#_ftn1)를통해서 할 수 있습니다. 홈페이지에서 윈도우, 리눅스, 맥 OS 버전의 파이참을 다운로드 할 수 있습니다. 파이참은 유료 버전인 `프로페셔녈(PyCharm ProfessionalEdition)`과, 무료 버전인 `커뮤니티(PyCharm Community Edition)`으로 나뉩니다. 앞으로 에이전트를 개발할 때 `파이참 커뮤니티`를 사용할 것이므로 커뮤니티 버전을 기준으로 설치법을 설명할 것입니다.
 
 
 
-*설치는 다음과 같은 순서로 진행합니다.*
+**설치는 다음과 같은 순서로 진행합니다. **
 
 1. 파이참 공식 홈페이지 링크에서 파이참 커뮤니티버전을 다운로드합니다.
 
@@ -109,38 +109,43 @@
    ​
 
 10. 파이참이 정상적으로 설치되었는지 확인하기 위해 파이썬 스크립트 파일을 생성해봅니다. 가장 간단한 예제인 `“Hello World”`를 실행하기 위해 다음과 같이 hello_world.py 파일을 생성합니다.
-  ​
-
-   <p align="center"><img src="./install_image/hello_world_ubuntu.png" style="zoom:100%"></p>
  ​
+
+  <p align="center"><img src="./install_image/hello_world_ubuntu.png" style="zoom:100%"></p>
+  ​
 
 11. 생성한 파일에 마우스 커서를 놓고 오른쪽 버튼을 누르면 여러 항목이 나옵니다. 그 중에서 “Run ‘hello_world’” 버튼을 누르면 hello_world.py 파일을 실행할 수 있습니다. 
     ​
 
    <p align="center"><img src="./install_image/run_hello_world.png" style="zoom:100%"></p>
 
-    
+    ​
+
+
 12. hello_world.py 파일 안에 다음 코드를 입력합니다.
-```python
-print("hello world")
-```
+   ```python
+   print("hello world")
+   ```
+
+
+
 
 13. hello_world.py 파일을 실행시키면 아래 화면과 같이 실행 창에 “hello world”가 나옵니다. 이를 통해 파이참이 정상적으로 설치된 것을 확인할 수 있습니다.
 
   ​
 
-  <p align="center"><img src="./install_image/console_hello_world.png" style="zoom:70%"></p>
+  <p align="center"><img src="./rinstall_image/console_hello_world.png" style="zoom:70%"></p>
 
   ​
 
 
-### Virtualenv(가상환경) 사용법
+###Virtualenv(가상환경) 사용법 :happy: 
 
 여기까지가기본적인 파이참의 환경설정입니다. 한 컴퓨터에서 여러가지 프로젝트를 진행할 경우에 프로젝트마다 개발환경이다를 수 있습니다. 서로 다른 프로젝트의 개발환경이 다를 경우에 사용자는 상당한 불편을 겪을 수 있습니다. 따라서 프로젝트별로 개발환경을 분리해서 관리하는 것은 상당한 장점이 있는데 그 기능을 하는 것이 VirtualEnv입니다. VirtualEnv를 사용하면 이 책의 프로젝트만을위한 가상 개발환경을 만들 수 있습니다. 
 
 파이참은VirtualEnv를 지원하기 때문에 파이참으로 VirtualEnv를사용하는 법을 설명하겠습니다. VirtualEnv의 설치 및 사용 방법은 여러 가지가 있지만 위에서설치한 파이참을 이용하면 GUI(graphic user interface)형식으로 VirtualEnv를 사용할 수 있습니다. 그리고 파이참은 가상 개발환경에설치된 다양한 파이썬 외부 라이브러리들을 관리 할 수 있는 기능을 제공합니다. 
 
-#### 파이참에서 VirtualEnv 이용방법은 다음과 같습니다.
+**파이참에서 VirtualEnv 이용방법은 다음과 같습니다.**
 
 1. “File” 메뉴에서 “Settings”를 클릭합니다. 
 
@@ -174,11 +179,11 @@ print("hello world")
 
    ​
 
-### 2.1.3 오픈에이아이 설치 및 테스트
+### 1.3 오픈에이아이 설치 및 테스트
 
 2016년에 오픈에이아이(OpenAI)라는 회사가 세워졌습니다. 이 회사의 목표는 인공지능 기술을 전 세계에공개해서 더 안전한 인공지능을 만들어가며 더 많은 분야에 인공지능을 도입하는 것입니다. 오픈에이아이 짐(Gym)는 오픈에이아이에서 만든 환경인데여기서 여러가지 인공지능 알고리즘을 테스트 해볼 수 있습니다. 
 
-오픈에이아이짐의 코드는 모두 오픈에이아이의 깃허브(Github)[[2\]](https://github.com/openai/gym)에업로드되어있습니다.
+오픈에이아이짐의 코드는 모두 오픈에이아이의 깃허브(Github)[[2\]](#_ftn1)에업로드되어있습니다.
 
    <p align="center"><img src="./install_image/openai_github.png" style="zoom:80%"></p>
 
@@ -214,7 +219,7 @@ $ pip3 install -e .[all]
 
 오픈에이아이 짐이 정상적으로 설치되었는지 확인하기 위해서 간단한 예제를 실행해봅니다. 오픈에이아이 짐의 가장 간단한 예제는 카트폴(CartPole)입니다. 카트폴은 카트에 진자가 달린 형태로 이 문제의 목표는 카트를 움직여서 그 반동으로 진자를 세우는 것입니다. 테스트할 때는 그냥 아무 입력도 카트폴에 주지 않은 상태로 오픈에이아이 짐이 제대로 실행되는지만 확인할 것입니다. 
 
-`CartPole.py` 파일을 생성하고 코드 2.1과 같이 입력합니다.
+`CartPole.py` 파일을 생성하고 아래와 같이 입력합니다.
 
 ```python
 import gym
@@ -225,7 +230,7 @@ for _ in range(1000):
     env.step(env.action_space.sample()) # take a random action
 ```
 
-​         					        	코드 2.1 카트폴 예제 실행 코드
+​         					        	              카트폴 예제 실행 코드
 
 
 이 코드를 실행하면 화면에 아무 행동도 하지 않는 카트폴이 실행됩니다. 오픈에이아이 짐은 이와 같은 많은 문제들을 제공하며 사용자들은 오픈에이아이 짐의 여러가지 문제에 자신의 학습 알고리즘을 적용해볼 수 있습니다. 또한 오픈에이아이 짐 사이트에 자신의 알고리즘을 공유하거나 결과를 확인할 수 있습니다. 
@@ -233,12 +238,3 @@ for _ in range(1000):
 
 
    <p align="center"><img src="./install_image/cartpole_exam.png" style="zoom:80%"></p>
-
-
-------
-
-[[1\]](#_ftnref1) https://www.jetbrains.com/pycharm/
-
-[[2\]](#_ftnref2) https://github.com/openai/gym
-
-[[3\]](#_ftnref3) https://www.python.org/downloads/release/python-350/
