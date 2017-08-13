@@ -108,7 +108,7 @@ $ sudo apt-get install git
 ```shell
 $ git clone https://github.com/openai/gym
 $ cd gym
-$ pip3 install -e
+$ pip3 install -e .
 ```
 
 
