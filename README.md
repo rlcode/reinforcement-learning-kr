@@ -46,5 +46,5 @@ pip install -r requirements.txt
 
 **Atari 브레이크아웃** - 딥러닝을 응용하여 좀더 복잡한 Atari 브레이크아웃 게임을 마스터하는 에이전트 만들기
 
-- [Deep Q Network](./3-atari/1-breakout/breakout_dqn.py), 
+- [Deep Q Network](./3-atari/1-breakout/breakout_dqn.py)
 - [Asynchronous Advantage Actor Critic(A3C)](./3-atari/1-breakout/breakout_a3c.py)
