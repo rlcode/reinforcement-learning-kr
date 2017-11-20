@@ -32,7 +32,7 @@ class ValueIteration:
             next_value_table[state[0]][state[1]] = round(max(value_list), 2)
         self.value_table = next_value_table
 
-    # 현재 가치 함수로부터 해옫ㅇ을 반환
+    # 현재 가치 함수로부터 행동을 반환
     def get_action(self, state):
         action_list = []
         max_value = -99999
