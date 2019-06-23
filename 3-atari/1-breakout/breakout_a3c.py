@@ -294,7 +294,7 @@ class Agent(threading.Thread):
         running_add = 0
 
         if not done:
-            running_add = self.critic.predict(np.float32(
+            running_add = self.local_critic.predict(np.float32(
                 self.states[-1] / 255.))[0]
 
         for t in reversed(range(0, len(rewards))):
@@ -312,7 +312,7 @@ class Agent(threading.Thread):
 
         states = np.float32(states / 255.)
 
-        values = self.critic.predict(states)
+        values = self.local_critic.predict(states)
         values = np.reshape(values, len(values))
 
         advantages = discounted_prediction - values
