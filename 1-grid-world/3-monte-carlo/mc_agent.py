@@ -28,7 +28,7 @@ class MCAgent:
             state = str(reward[0])
             if state not in visit_state:
                 visit_state.append(state)
-                G_t = self.discount_factor * (reward[1] + G_t)
+                G_t = reward[1] + self.discount_factor * G_t
                 value = self.value_table[state]
                 self.value_table[state] = (value +
                                            self.learning_rate * (G_t - value))
@@ -106,7 +106,6 @@ if __name__ == "__main__":
 
             # 에피소드가 완료됐을 때, 큐 함수 업데이트
             if done:
-                print("episode : ", episode)
                 agent.update()
                 agent.samples.clear()
                 break
