@@ -103,12 +103,12 @@ $ sudo apt-get install git
 
 
 
-깃을 설치한 다음에 오픈에이아이 짐을 설치합니다. 터미널 창에서 오픈에이아이 짐을 설치할 디렉토리로 이동한 다음에 다음과 같은 명령어를 실행합니다. 
+깃을 설치한 다음에 오픈에이아이 짐을 설치합니다. 터미널 창에서 오픈에이아이 짐을 설치할 디렉토리로 이동한 다음에 다음과 같은 명령어를 실행합니다. 설치할 때는 파이참에서 생성한 VirtualEnv의 파이썬으로 설치해야 합니다.
 
 ```shell
 $ git clone https://github.com/openai/gym
 $ cd gym
-$ pip3 install -e .
+$ pip install -e .
 ```
 
 
@@ -116,7 +116,7 @@ $ pip3 install -e .
 오픈에이아이 짐은 여러가지 다른 설정으로 설치할 수 있는데 pip install -e .은 가장 기본적인 부분들만 설치하는 것입니다. 이후에 아타리 게임 등 오픈에이아이 짐의 모든 게임들을 사용하려면 pip install -e . 대신에 다음과 같이 입력해야 합니다.
 
 ``` shell
-$ pip3 install -e .[all]
+$ pip install -e '.[all]'
 ```
 
 

@@ -9,7 +9,7 @@ from keras.layers.convolutional import Conv2D
 
 global episode
 episode = 0
-EPISODES = 8000000
+EPISODES = 100
 env_name = "BreakoutDeterministic-v4"
 
 class TestAgent:
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         observe = env.reset()
         next_observe = observe
 
-        for _ in range(random.randint(1, 20)):
+        for _ in range(random.randint(1, agent.no_op_steps)):
             observe = next_observe
             next_observe, _, _, _ = env.step(1)
 

@@ -9,7 +9,7 @@ UNIT = 100  # 픽셀 수
 HEIGHT = 5  # 그리드월드 세로
 WIDTH = 5  # 그리드월드 가로
 TRANSITION_PROB = 1
-POSSIBLE_ACTIONS = [0, 1, 2, 3]  # 상, 하, 좌, 우
+POSSIBLE_ACTIONS = [0, 1, 2, 3]  # 좌, 우, 상, 하
 ACTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # 좌표로 나타낸 행동
 REWARDS = []
 
