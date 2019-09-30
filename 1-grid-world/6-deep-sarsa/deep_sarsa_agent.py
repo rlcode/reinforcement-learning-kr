@@ -3,9 +3,13 @@ import pylab
 import random
 import numpy as np
 from environment import Env
-from keras.layers import Dense
-from keras.optimizers import Adam
-from keras.models import Sequential
+#from keras.layers import Dense
+#from keras.optimizers import Adam
+#from keras.models import Sequential
+
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import Sequential
 
 EPISODES = 1000
 
