@@ -1,4 +1,5 @@
 import gym
+import pylab
 import numpy as np
 from keras.layers import Dense, Input, Lambda
 from keras.models import Model
@@ -10,7 +11,7 @@ EPISODES = 10000
 
 class A2CAgent:
     def __init__(self, state_size, action_size):
-        self.render = True
+        self.render = False
         self.load_model = False
         self.state_size = state_size
         self.action_size = action_size
@@ -115,8 +116,8 @@ class A2CAgent:
 
 
 if __name__ == "__main__":
-    # env = gym.make('Pendulum-v0')
-    env = gym.make('LunarLanderContinuous-v2')
+    env = gym.make('Pendulum-v0')
+    # env = gym.make('LunarLanderContinuous-v2')
     # get size of state and action from environment
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.shape[0]
@@ -125,11 +126,11 @@ if __name__ == "__main__":
     agent = A2CAgent(state_size, action_size)
 
     scores, episodes = [], []
+    score_avg = 0
 
     for e in range(EPISODES):
         done = False
-        score = 0
-        score_avg = 0
+        score = 0    
         state = env.reset()
         state = np.reshape(state, [1, state_size])
 
@@ -147,11 +148,15 @@ if __name__ == "__main__":
             state = next_state
 
             if done:
-                score_avg = 0.99 * score_avg + 0.01 * score
+                score_avg = 0.99 * score_avg + 0.01 * score if score_avg != 0 else score
+                scores.append(score_avg)
+                episodes.append(e)
+                pylab.plot(episodes, scores, 'b')
+                pylab.savefig("./save_graph/continuous_control.png")
                 print("episode: {} | score : {:.3f} | score_avg : {:.3f}".format(
                        e, score, score_avg))
 
         # save the model
-        if e % 50 == 0:
-            agent.actor.save_weights("./save_model/lunarlander_actor.h5")
-            agent.critic.save_weights("./save_model/lunarlander_critic.h5")
+        # if e % 50 == 0:
+            # agent.actor.save_weights("./save_model/lunarlander_actor.h5")
+            # agent.critic.save_weights("./save_model/lunarlander_critic.h5")
