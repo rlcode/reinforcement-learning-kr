@@ -63,11 +63,8 @@ class DeepSARSAgent:
             predict = tf.reduce_sum(one_hot_action * predict, axis=1)
 
             # done = True 일 경우 에피소드가 끝나서 다음 상태가 없음
-            if done:
-                target = reward
-            else:
-                target = (reward + self.discount_factor * 
-                          self.model(next_state)[0][next_action])
+            next_q = self.model(next_state)[0][next_action]
+            target = reward + (1 - done) * self.discount_factor * next_q
 
             # MSE 오류 함수 계산
             loss = tf.reduce_mean(tf.square(target - predict))
