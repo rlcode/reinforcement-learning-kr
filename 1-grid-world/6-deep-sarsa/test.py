@@ -3,16 +3,13 @@ import pylab
 import random
 import numpy as np
 from environment import Env
-
 import tensorflow as tf
-from tensorflow.keras import Model
-from tensorflow.keras import optimizers, losses
 
 EPISODES = 10
 
 
 # 딥살사 인공신경망
-class DeepSARSA(Model):
+class DeepSARSA(tf.keras.Model):
     def __init__(self, action_size):
         super(DeepSARSA, self).__init__()
         self.fc1 = tf.keras.layers.Dense(30, activation='relu')
@@ -65,7 +62,6 @@ if __name__ == "__main__":
 
         while not done:
             # 현재 상태에 대한 행동 선택
-            state = tf.convert_to_tensor(state, tf.float32)
             action = agent.get_action(state)
 
             # 선택한 행동으로 환경에서 한 타임스텝 진행 후 샘플 수집

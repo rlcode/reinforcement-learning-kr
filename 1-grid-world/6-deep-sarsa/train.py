@@ -3,16 +3,13 @@ import pylab
 import random
 import numpy as np
 from environment import Env
-
 import tensorflow as tf
-from tensorflow.keras import Model
-from tensorflow.keras import optimizers, losses
 
 EPISODES = 1000
 
 
 # 딥살사 인공신경망
-class DeepSARSA(Model):
+class DeepSARSA(tf.keras.Model):
     def __init__(self, action_size):
         super(DeepSARSA, self).__init__()
         self.fc1 = tf.keras.layers.Dense(30, activation='relu')
@@ -29,7 +26,6 @@ class DeepSARSA(Model):
 # 그리드월드 예제에서의 딥살사 에이전트
 class DeepSARSAgent:
     def __init__(self):
-        self.load_model = False
         # 에이전트가 가능한 모든 행동 정의
         self.action_space = [0, 1, 2, 3, 4]
         # 상태의 크기와 행동의 크기 정의
@@ -42,7 +38,7 @@ class DeepSARSAgent:
         self.epsilon_decay = .9999
         self.epsilon_min = 0.01
         self.model = DeepSARSA(self.action_size)
-        self.optimizer = optimizers.Adam(lr=self.learning_rate)
+        self.optimizer = tf.keras.optimizers.Adam(lr=self.learning_rate)
 
     # 입실론 탐욕 정책으로 행동 선택
     def get_action(self, state):
@@ -97,13 +93,11 @@ if __name__ == "__main__":
 
         while not done:
             # 현재 상태에 대한 행동 선택
-            state = tf.convert_to_tensor(state, tf.float32)
             action = agent.get_action(state)
 
             # 선택한 행동으로 환경에서 한 타임스텝 진행 후 샘플 수집
             next_state, reward, done = env.step(action)
             next_state = np.reshape(next_state, [1, 15])
-            next_state = tf.convert_to_tensor(next_state, tf.float32)
             next_action = agent.get_action(next_state)
             
             # 샘플로 모델 학습
