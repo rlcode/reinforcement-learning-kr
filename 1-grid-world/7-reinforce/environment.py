@@ -5,18 +5,19 @@ from PIL import ImageTk, Image
 
 PhotoImage = ImageTk.PhotoImage
 UNIT = 50  # 픽셀 수
-HEIGHT = 5  # 그리드월드 세로
-WIDTH = 5  # 그리드월드 가로
+HEIGHT = 5  # 그리드 세로
+WIDTH = 5  # 그리드 가로
 
 np.random.seed(1)
 
 
 class Env(tk.Tk):
-    def __init__(self):
+    def __init__(self, render_speed=0.01):
         super(Env, self).__init__()
+        self.render_speed=render_speed
         self.action_space = ['u', 'd', 'l', 'r']
         self.action_size = len(self.action_space)
-        self.title('Reinforce')
+        self.title('DeepSARSA')
         self.geometry('{0}x{1}'.format(HEIGHT * UNIT, HEIGHT * UNIT))
         self.shapes = self.load_images()
         self.canvas = self._build_canvas()
@@ -27,7 +28,7 @@ class Env(tk.Tk):
         self.set_reward([0, 1], -1)
         self.set_reward([1, 2], -1)
         self.set_reward([2, 3], -1)
-        # 목표지점 설정
+        # 목표 지점 설정
         self.set_reward([4, 4], 1)
 
     def _build_canvas(self):
@@ -73,7 +74,7 @@ class Env(tk.Tk):
         self.set_reward([1, 2], -1)
         self.set_reward([2, 3], -1)
 
-        # 목표 지점
+        # #goal
         self.set_reward([4, 4], 1)
 
     def set_reward(self, state, reward):
@@ -101,6 +102,7 @@ class Env(tk.Tk):
         temp['state'] = state
         self.rewards.append(temp)
 
+    # new methods
     def check_if_reward(self, state):
         check_list = dict()
         check_list['if_goal'] = False
@@ -109,7 +111,7 @@ class Env(tk.Tk):
         for reward in self.rewards:
             if reward['state'] == state:
                 rewards += reward['reward']
-                if reward['reward'] > 0:
+                if reward['reward'] == 1:
                     check_list['if_goal'] = True
 
         check_list['rewards'] = rewards
@@ -123,6 +125,7 @@ class Env(tk.Tk):
 
     def reset(self):
         self.update()
+        time.sleep(0.5)
         x, y = self.canvas.coords(self.rectangle)
         self.canvas.move(self.rectangle, UNIT / 2 - x, UNIT / 2 - y)
         self.reset_reward()
@@ -139,7 +142,7 @@ class Env(tk.Tk):
         check = self.check_if_reward(self.coords_to_state(next_coords))
         done = check['if_goal']
         reward = check['rewards']
-        reward -= 0.1
+
         self.canvas.tag_raise(self.rectangle)
 
         s_ = self.get_state()
@@ -169,7 +172,7 @@ class Env(tk.Tk):
     def move_rewards(self):
         new_rewards = []
         for temp in self.rewards:
-            if temp['reward'] > 0:
+            if temp['reward'] == 1:
                 new_rewards.append(temp)
                 continue
             temp['coords'] = self.move_const(temp)
@@ -218,7 +221,7 @@ class Env(tk.Tk):
             if s[0] < (WIDTH - 1) * UNIT:
                 base_action[0] += UNIT
         elif action == 3:  # 좌
-           if s[0] > UNIT:
+            if s[0] > UNIT:
                 base_action[0] -= UNIT
 
         self.canvas.move(target, base_action[0], base_action[1])
@@ -229,5 +232,5 @@ class Env(tk.Tk):
 
     def render(self):
         # 게임 속도 조정
-        time.sleep(0.07)
+        time.sleep(self.render_speed)
         self.update()
