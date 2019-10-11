@@ -12,8 +12,9 @@ np.random.seed(1)
 
 
 class Env(tk.Tk):
-    def __init__(self):
+    def __init__(self, render_speed=0.01):
         super(Env, self).__init__()
+        self.render_speed=render_speed
         self.action_space = ['u', 'd', 'l', 'r']
         self.action_size = len(self.action_space)
         self.title('DeepSARSA')
@@ -102,7 +103,6 @@ class Env(tk.Tk):
         self.rewards.append(temp)
 
     # new methods
-
     def check_if_reward(self, state):
         check_list = dict()
         check_list['if_goal'] = False
@@ -232,5 +232,5 @@ class Env(tk.Tk):
 
     def render(self):
         # 게임 속도 조정
-        time.sleep(0.05)
+        time.sleep(self.render_speed)
         self.update()
