@@ -97,10 +97,11 @@ class DQNAgent:
             predicts = tf.reduce_sum(one_hot_action * predicts, axis=1)
 
             # 다음 상태에 대한 타깃 모델의 큐함수
-            target_vals = self.target_model(next_states)
+            target_predicts = self.target_model(next_states)
 
             # 벨만 최적 방정식을 이용한 업데이트 타깃
-            targets = rewards + (1 - dones) * self.discount_factor * (np.amax(target_vals, axis=-1))
+            max_q = np.amax(target_predicts, axis=-1)
+            targets = rewards + (1 - dones) * self.discount_factor * max_q
             loss = tf.reduce_mean(tf.square(targets - predicts))
         
         # 오류함수를 줄이는 방향으로 모델 업데이트
