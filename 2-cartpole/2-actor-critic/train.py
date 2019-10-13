@@ -71,8 +71,6 @@ class A2CAgent:
             advantage = tf.stop_gradient(target - value[0])
             actor_loss = tf.math.log(action_prob + 1e-5) * advantage
             actor_loss = -tf.reduce_mean(actor_loss)
-            # entropy =  - policy * tf.math.log(policy + 1e-5)
-            # entropy = tf.reduce_mean(tf.stop_gradient(entropy))
 
             # 하나의 오류 함수로 만들기
             loss = 0.2 * actor_loss + critic_loss
