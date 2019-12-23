@@ -60,7 +60,7 @@ class A3CAgent():
         self.no_op_steps = 30
         self.lr = 2.5e-4
         # 쓰레드의 갯수
-        self.threads = 1
+        self.threads = 16
         
         # 글로벌 인공신경망 생성 
         self.global_model = ActorCritic(self.action_size)
@@ -183,6 +183,7 @@ class Runner(threading.Thread):
                     dead = True
                     start_life = info['ale.lives']
 
+                score += reward
                 reward = np.clip(reward, -1., 1.)
 
                 # 샘플을 저장
