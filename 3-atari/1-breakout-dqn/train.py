@@ -15,9 +15,10 @@ EPISODES = 50000
 
 
 class DQN(tf.keras.Model):
-    def __init__(self, action_size):
+    def __init__(self, action_size, state_size):
         super(DQN, self).__init__()
-        self.conv1 = Conv2D(32, (8, 8), strides=(4, 4), activation='relu')
+        self.conv1 = Conv2D(32, (8, 8), strides=(4, 4), activation='relu',
+                            input_shape=state_size)
         self.conv2 = Conv2D(64, (4, 4), strides=(2, 2), activation='relu')
         self.conv3 = Conv2D(64, (3, 3), strides=(1, 1), activation='relu')
         self.flatten = Flatten()
@@ -57,14 +58,14 @@ class DQNAgent:
         self.memory = deque(maxlen=400000)
         self.no_op_steps = 30
         
-        self.model = DQN(action_size)
-        self.target_model = DQN(action_size)
+        self.model = DQN(action_size, state_size)
+        self.target_model = DQN(action_size, state_size)
         self.optimizer = train.RMSPropOptimizer(self.learning_rate,
                                                 epsilon=0.01)
         
         self.avg_q_max, self.avg_loss = 0, 0
 
-        self.update_target_model()
+        # self.update_target_model()
         
         self.writer = tf.summary.create_file_writer('summary/breakout_a3c')
         
