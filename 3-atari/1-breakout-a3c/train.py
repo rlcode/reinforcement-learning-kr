@@ -60,7 +60,7 @@ class A3CAgent():
         self.no_op_steps = 30
         self.lr = 2.5e-4
         # 쓰레드의 갯수
-        self.threads = 16
+        self.threads = 1
         
         # 글로벌 인공신경망 생성 
         self.global_model = ActorCritic(self.action_size)
@@ -206,10 +206,8 @@ class Runner(threading.Thread):
                     stats = [score, self.avg_p_max / float(step),
                              step]
                     print("episode:", episode, "  score:", score, "  step:", step)
-                    
 
                     with self.writer.as_default():
-                        
                         tf.summary.scalar('Total Reward/Episode', score, step=episode)
                         tf.summary.scalar('Average Max Prob/Episode', self.avg_p_max / float(step), step=episode)
                         tf.summary.scalar('Duration/Episode', step, step=episode)
@@ -267,7 +265,7 @@ class Runner(threading.Thread):
         # 정책 신경망 업데이트
         action = tf.convert_to_tensor(self.actions, dtype=tf.float32)
         policy_prob = nn.softmax(policy)
-        action_prob = tf.reduce_sum(action * policy_prob)
+        action_prob = tf.reduce_sum(action * policy_prob, axis=1, keepdims=True)
         cross_entropy = tf.math.log(action_prob + 1e-10) * tf.stop_gradient(advantages)
         cross_entropy = -tf.reduce_sum(cross_entropy)
         
