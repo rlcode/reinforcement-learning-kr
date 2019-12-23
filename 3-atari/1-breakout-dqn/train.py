@@ -64,7 +64,6 @@ class DQNAgent:
         
         self.avg_q_max, self.avg_loss = 0, 0
 
-        
         self.update_target_model()
         
         self.writer = tf.summary.create_file_writer('summary/breakout_a3c')
@@ -80,7 +79,7 @@ class DQNAgent:
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
         else:
-            q_value = self.model.predict(history)
+            q_value = self.model(history)
             return np.argmax(q_value[0])
     
     def append_sample(self, history, action, reward, next_history, dead):
@@ -168,8 +167,7 @@ def main():
             next_state = np.reshape([next_state], (1, 84, 84, 1))
             next_history = np.append(next_state, history[:, :, :, :3], axis=3)
 
-            agent.avg_q_max += np.amax(
-                agent.model.predict(np.float32(history / 255.))[0])
+            agent.avg_q_max += np.amax(agent.model(np.float32(history / 255.))[0])
 
             if start_life > info['ale.lives']:
                 dead = True
