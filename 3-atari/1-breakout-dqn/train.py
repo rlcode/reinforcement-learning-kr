@@ -65,7 +65,7 @@ class DQNAgent:
         
         self.avg_q_max, self.avg_loss = 0, 0
         
-        self.local_model(tf.convert_to_tensor(np.random.random((1, *self.state_size)), dtype=tf.float32))
+        self.target_model(tf.convert_to_tensor(np.random.random((1, *self.state_size)), dtype=tf.float32))
         self.update_target_model()
         
         self.writer = tf.summary.create_file_writer('summary/breakout_a3c')
