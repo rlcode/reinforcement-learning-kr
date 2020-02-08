@@ -1,3 +1,4 @@
+import os
 import sys
 import gym
 import pylab
@@ -7,6 +8,7 @@ import tensorflow as tf
 from collections import deque
 
 EPISODES = 300
+os.environ["CUDA_VISIBLE_DEVICES"] ="5"
 
 
 # 상태가 입력, 큐함수가 출력인 인공신경망 생성
