@@ -3,20 +3,20 @@ import gym
 import pylab
 import random
 import numpy as np
-import tensorflow as tf
 from collections import deque
-
-EPISODES = 10
+import tensorflow as tf
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.initializers import RandomUniform
 
 
 # 상태가 입력, 큐함수가 출력인 인공신경망 생성
 class DQN(tf.keras.Model):
     def __init__(self, action_size):
         super(DQN, self).__init__()
-        self.fc1 = tf.keras.layers.Dense(24, activation='relu')
-        self.fc2 = tf.keras.layers.Dense(24, activation='relu')
-        self.fc_out = tf.keras.layers.Dense(action_size, 
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
+        self.fc1 = Dense(24, activation='relu')
+        self.fc2 = Dense(24, activation='relu')
+        self.fc_out = Dense(action_size,
+                            kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
     def call(self, x):
         x = self.fc1(x)
@@ -34,7 +34,7 @@ class DQNAgent:
 
         # 모델과 타깃 모델 생성
         self.model = DQN(action_size)
-        self.model.load_weights("./save_model/trained/dqn")
+        self.model.load_weights("./save_model/model")
 
     # 입실론 탐욕 정책으로 행동 선택
     def get_action(self, state):
@@ -51,7 +51,8 @@ if __name__ == "__main__":
     # DQN 에이전트 생성
     agent = DQNAgent(state_size, action_size)
 
-    for e in range(EPISODES):
+    num_episode = 10
+    for e in range(num_episode):
         done = False
         score = 0
         # env 초기화
@@ -66,13 +67,10 @@ if __name__ == "__main__":
             # 선택한 행동으로 환경에서 한 타임스텝 진행
             next_state, reward, done, info = env.step(action)
             next_state = np.reshape(next_state, [1, state_size])
-            # 에피소드가 중간에 끝나면 -100 보상
-            reward = reward if not done or score == 499 else -100
 
             score += reward
             state = next_state
 
             if done:
-                score = score if score == 500 else score + 100
                 # 에피소드마다 학습 결과 출력
                 print("episode: {:3d} | score: {:.3f} ".format(e, score))

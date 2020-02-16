@@ -1,2 +1,2 @@
-model_checkpoint_path: "a2c"
-all_model_checkpoint_paths: "a2c"
+model_checkpoint_path: "model"
+all_model_checkpoint_paths: "model"
