@@ -4,21 +4,21 @@ import gym
 import pylab
 import random
 import numpy as np
-import tensorflow as tf
 from collections import deque
-
-EPISODES = 300
-os.environ["CUDA_VISIBLE_DEVICES"] ="5"
+import tensorflow as tf
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.initializers import RandomUniform
 
 
 # 상태가 입력, 큐함수가 출력인 인공신경망 생성
 class DQN(tf.keras.Model):
     def __init__(self, action_size):
         super(DQN, self).__init__()
-        self.fc1 = tf.keras.layers.Dense(24, activation='relu')
-        self.fc2 = tf.keras.layers.Dense(24, activation='relu')
-        self.fc_out = tf.keras.layers.Dense(action_size, 
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
+        self.fc1 = Dense(24, activation='relu')
+        self.fc2 = Dense(24, activation='relu')
+        self.fc_out = Dense(action_size,
+                            kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
     def call(self, x):
         x = self.fc1(x)
@@ -51,7 +51,7 @@ class DQNAgent:
         # 모델과 타깃 모델 생성
         self.model = DQN(action_size)
         self.target_model = DQN(action_size)
-        self.optimizer = tf.keras.optimizers.Adam(lr=self.learning_rate)
+        self.optimizer = Adam(lr=self.learning_rate)
 
         # 타깃 모델 초기화
         self.update_target_model()
@@ -89,8 +89,6 @@ class DQNAgent:
         # 학습 파라메터
         model_params = self.model.trainable_variables
         with tf.GradientTape() as tape:
-            tape.watch(model_params)
-
             # 현재 상태에 대한 모델의 큐함수
             predicts = self.model(states)
             one_hot_action = tf.one_hot(actions, self.action_size)
@@ -103,7 +101,7 @@ class DQNAgent:
             max_q = np.amax(target_predicts, axis=-1)
             targets = rewards + (1 - dones) * self.discount_factor * max_q
             loss = tf.reduce_mean(tf.square(targets - predicts))
-        
+
         # 오류함수를 줄이는 방향으로 모델 업데이트
         grads = tape.gradient(loss, model_params)
         self.optimizer.apply_gradients(zip(grads, model_params))
@@ -121,7 +119,8 @@ if __name__ == "__main__":
     scores, episodes = [], []
     score_avg = 0
 
-    for e in range(EPISODES):
+    num_episode = 300
+    for e in range(num_episode):
         done = False
         score = 0
         # env 초기화
@@ -155,17 +154,18 @@ if __name__ == "__main__":
                 agent.update_target_model()
                 # 에피소드마다 학습 결과 출력
                 score_avg = 0.9 * score_avg + 0.1 * score if score_avg != 0 else score
-                scores.append(score_avg)
-                episodes.append(e)
-                pylab.plot(episodes, scores, 'b')
-                pylab.savefig("./save_graph/dqn.png")
                 print("episode: {:3d} | score avg: {:3.2f} | memory length: {:4d} | epsilon: {:.4f}".format(
                       e, score_avg, len(agent.memory), agent.epsilon))
 
-                # 이동 평균이 350 이상일 때 종료
-                if score_avg > 350:
-                    agent.model.save_weights("./save_model/dqn", save_format="tf")
-                    sys.exit()
+                # 에피소드마다 학습 결과 그래프로 저장
+                scores.append(score_avg)
+                episodes.append(e)
+                pylab.plot(episodes, scores, 'b')
+                pylab.xlabel("episode")
+                pylab.ylabel("average score")
+                pylab.savefig("./save_graph/graph.png")
 
-        if e % 50 == 0:
-            agent.model.save_weights("./save_model/dqn", save_format="tf")
+                # 이동 평균이 400 이상일 때 종료
+                if score_avg > 400:
+                    agent.model.save_weights("./save_model/model", save_format="tf")
+                    sys.exit()

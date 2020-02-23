@@ -3,21 +3,21 @@ import gym
 import pylab
 import numpy as np
 import tensorflow as tf
-
-EPISODES = 10
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.initializers import RandomUniform
 
 
 # 정책 신경망과 가치 신경망 생성
 class A2C(tf.keras.Model):
     def __init__(self, action_size):
         super(A2C, self).__init__()
-        self.actor_fc = tf.keras.layers.Dense(24, activation='tanh')
-        self.actor_out = tf.keras.layers.Dense(action_size, activation='softmax',
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
-        self.critic_fc1 = tf.keras.layers.Dense(24, activation='tanh')
-        self.critic_fc2 = tf.keras.layers.Dense(24, activation='tanh')
-        self.critic_out = tf.keras.layers.Dense(1,             
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
+        self.actor_fc = Dense(24, activation='tanh')
+        self.actor_out = Dense(action_size, activation='softmax',
+                               kernel_initializer=RandomUniform(-1e-3, 1e-3))
+        self.critic_fc1 = Dense(24, activation='tanh')
+        self.critic_fc2 = Dense(24, activation='tanh')
+        self.critic_out = Dense(1,
+                                kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
     def call(self, x):
         actor_x = self.actor_fc(x)
@@ -29,6 +29,7 @@ class A2C(tf.keras.Model):
         return policy, value
 
 
+
 # 카트폴 예제에서의 액터-크리틱(A2C) 에이전트
 class A2CAgent:
     def __init__(self, action_size):
@@ -37,7 +38,7 @@ class A2CAgent:
 
         # 정책신경망과 가치신경망 생성
         self.model = A2C(self.action_size)
-        self.model.load_weights("./save_model/trained/a2c")
+        self.model.load_weights("./save_model/model")
 
     # 정책신경망의 출력을 받아 확률적으로 행동을 선택
     def get_action(self, state):
@@ -56,7 +57,8 @@ if __name__ == "__main__":
     # 액터-크리틱(A2C) 에이전트 생성
     agent = A2CAgent(action_size)
 
-    for e in range(EPISODES):
+    num_episode = 10
+    for e in range(num_episode):
         done = False
         score = 0
         state = env.reset()

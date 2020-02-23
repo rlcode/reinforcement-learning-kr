@@ -3,21 +3,22 @@ import gym
 import pylab
 import numpy as np
 import tensorflow as tf
-
-EPISODES = 1000
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.initializers import RandomUniform
 
 
 # 정책 신경망과 가치 신경망 생성
 class A2C(tf.keras.Model):
     def __init__(self, action_size):
         super(A2C, self).__init__()
-        self.actor_fc = tf.keras.layers.Dense(24, activation='tanh')
-        self.actor_out = tf.keras.layers.Dense(action_size, activation='softmax',
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
-        self.critic_fc1 = tf.keras.layers.Dense(24, activation='tanh')
-        self.critic_fc2 = tf.keras.layers.Dense(24, activation='tanh')
-        self.critic_out = tf.keras.layers.Dense(1,             
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
+        self.actor_fc = Dense(24, activation='tanh')
+        self.actor_out = Dense(action_size, activation='softmax',
+                               kernel_initializer=RandomUniform(-1e-3, 1e-3))
+        self.critic_fc1 = Dense(24, activation='tanh')
+        self.critic_fc2 = Dense(24, activation='tanh')
+        self.critic_out = Dense(1,
+                                kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
     def call(self, x):
         actor_x = self.actor_fc(x)
@@ -44,7 +45,7 @@ class A2CAgent:
         # 정책신경망과 가치신경망 생성
         self.model = A2C(self.action_size)
         # 최적화 알고리즘 설정, 미분값이 너무 커지는 현상을 막기 위해 clipnorm 설정
-        self.optimizer = tf.keras.optimizers.Adam(lr=self.learning_rate, clipnorm=5.0)
+        self.optimizer = Adam(lr=self.learning_rate, clipnorm=5.0)
 
     # 정책신경망의 출력을 받아 확률적으로 행동을 선택
     def get_action(self, state):
@@ -56,8 +57,6 @@ class A2CAgent:
     def train_model(self, state, action, reward, next_state, done):
         model_params = self.model.trainable_variables
         with tf.GradientTape() as tape:
-            tape.watch(model_params)
-
             # 가치 신경망 오류 함수 구하기
             policy, value = self.model(state)
             _, next_value = self.model(next_state)
@@ -94,7 +93,8 @@ if __name__ == "__main__":
     scores, episodes = [], []
     score_avg = 0
 
-    for e in range(EPISODES):
+    num_episode = 1000
+    for e in range(num_episode):
         done = False
         score = 0
         loss_list = []
@@ -121,19 +121,18 @@ if __name__ == "__main__":
             if done:
                 # 에피소드마다 학습 결과 출력
                 score_avg = 0.9 * score_avg + 0.1 * score if score_avg != 0 else score
-                scores.append(score_avg)
-                episodes.append(e)
-                loss_list = np.array(loss_list)
-
-                pylab.plot(episodes, scores, 'b')
-                pylab.savefig("./save_graph/a2c.png")
                 print("episode: {:3d} | score avg: {:3.2f} | loss: {:.3f}".format(
                       e, score_avg, np.mean(loss_list)))
 
-                # 이동 평균이 300 이상일 때 종료
-                if score_avg > 350:
-                    agent.model.save_weights("./save_model/a2c", save_format="tf")
-                    sys.exit()
+                # 에피소드마다 학습 결과 그래프로 저장
+                scores.append(score_avg)
+                episodes.append(e)
+                pylab.plot(episodes, scores, 'b')
+                pylab.xlabel("episode")
+                pylab.ylabel("average score")
+                pylab.savefig("./save_graph/graph.png")
 
-        if e % 50 == 0:
-            agent.model.save_weights("./save_model/a2c", save_format="tf")
+                # 이동 평균이 400 이상일 때 종료
+                if score_avg > 400:
+                    agent.model.save_weights("./save_model/model", save_format="tf")
+                    sys.exit()

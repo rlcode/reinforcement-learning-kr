@@ -3,25 +3,25 @@ import gym
 import pylab
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.initializers import RandomUniform
 from tensorflow_probability import distributions as tfd
-
-EPISODES = 10
 
 
 # 정책 신경망과 가치 신경망 생성
 class A2C(tf.keras.Model):
     def __init__(self, action_size):
         super(A2C, self).__init__()
-        self.actor_fc1 = tf.keras.layers.Dense(24, activation='tanh')
-        self.actor_mu = tf.keras.layers.Dense(action_size, 
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
-        self.actor_sigma = tf.keras.layers.Dense(action_size, activation='softplus',
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
-                            
-        self.critic_fc1 = tf.keras.layers.Dense(24, activation='tanh')
-        self.critic_fc2 = tf.keras.layers.Dense(24, activation='tanh')
-        self.critic_out = tf.keras.layers.Dense(1, 
-            kernel_initializer=tf.keras.initializers.RandomUniform(minval=-3e-3, maxval=3e-5))
+        self.actor_fc1 = Dense(24, activation='tanh')
+        self.actor_mu = Dense(action_size,
+                              kernel_initializer=RandomUniform(-1e-3, 1e-3))
+        self.actor_sigma = Dense(action_size, activation='softplus',
+                                 kernel_initializer=RandomUniform(-1e-3, 1e-3))
+
+        self.critic_fc1 = Dense(24, activation='tanh')
+        self.critic_fc2 = Dense(24, activation='tanh')
+        self.critic_out = Dense(1,
+                                kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
     def call(self, x):
         actor_x = self.actor_fc1(x)
@@ -44,7 +44,7 @@ class A2CAgent:
 
         # 정책신경망과 가치신경망 생성
         self.model = A2C(self.action_size)
-        self.model.load_weights("./save_model/trained/a2c")
+        self.model.load_weights("./save_model/trained/model")
 
     # 정책신경망의 출력을 받아 확률적으로 행동을 선택
     def get_action(self, state):
@@ -74,7 +74,8 @@ if __name__ == "__main__":
 
     scores, episodes = [], []
 
-    for e in range(EPISODES):
+    num_episode = 10
+    for e in range(num_episode):
         done = False
         score = 0
         state = env.reset()
@@ -87,7 +88,6 @@ if __name__ == "__main__":
             next_state, reward, done, info = env.step(action)
             next_state = np.reshape(next_state, [1, state_size])
 
-            # 타임스텝마다 보상 0.1, 에피소드가 중간에 끝나면 -1 보상
             score += reward
             state = next_state
 
