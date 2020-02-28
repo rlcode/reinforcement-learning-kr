@@ -8,12 +8,9 @@ from collections import deque
 from skimage.color import rgb2gray
 from skimage.transform import resize
 
-from tensorflow.compat.v1 import train
 from tensorflow.keras.layers import Conv2D, Dense, Flatten
 from tensorflow.keras.optimizers import RMSprop
-
-EPISODES = 50000
-os.environ["CUDA_VISIBLE_DEVICES"] ="5"
+from tensorflow.keras.initializers import RandomUniform
 
 
 class DQN(tf.keras.Model):
@@ -25,7 +22,8 @@ class DQN(tf.keras.Model):
         self.conv3 = Conv2D(64, (3, 3), strides=(1, 1), activation='relu')
         self.flatten = Flatten()
         self.fc = Dense(512, activation='relu')
-        self.fc_out = Dense(action_size)
+        self.fc_out = Dense(action_size,
+                            kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
     def call(self, x):
 
@@ -51,8 +49,8 @@ class DQNAgent:
         self.epsilon = 1.
         self.epsilon_start, self.epsilon_end = 1.0, 0.1
         self.exploration_steps = 1000000.
-        self.epsilon_decay_step = (self.epsilon_start - self.epsilon_end) \
-            / self.exploration_steps
+        self.epsilon_decay_step = self.epsilon_start - self.epsilon_end
+        self.epsilon_decay_step /= self.exploration_steps
         self.batch_size = 32
         self.train_start = 50000
         self.update_target_rate = 10000
@@ -112,7 +110,7 @@ class DQNAgent:
 
             max_q = np.amax(target_predicts, axis=1)
             targets = rewards + (1 - dones) * self.discount_factor * max_q
-            
+
             error = tf.abs(targets - predicts)
             quadratic_part = tf.clip_by_value(error, 0.0, 1.0)
             linear_part = error - quadratic_part
@@ -136,9 +134,11 @@ def main():
     env = gym.make('BreakoutDeterministic-v4')
     agent = DQNAgent(action_size=3)
 
-    scores, episodes, global_step = [], [], 0
+    global_step = 0
+    score_avg = 0
 
-    for e in range(EPISODES):
+    num_episode = 50000
+    for e in range(num_episode):
         done = False
         dead = False
 
@@ -189,8 +189,7 @@ def main():
                 agent.train_model()
 
             # 일정 시간마다 타겟모델을 모델의 가중치로 업데이트
-            if (global_step % agent.update_target_rate == 0 
-                and global_step > agent.train_start):
+            if (global_step % agent.update_target_rate == 0 and global_step > agent.train_start):
                 agent.update_target_model()
 
             score += reward
@@ -203,8 +202,6 @@ def main():
             if done:
                 # 각 에피소드 당 학습 정보를 기록
                 if global_step > agent.train_start:
-                    stats = [score, agent.avg_q_max / float(step), step,
-                             agent.avg_loss / float(step)]
 
                     with agent.writer.as_default():
                         tf.summary.scalar('Total Reward/Episode', score, step=e)
@@ -212,11 +209,10 @@ def main():
                         tf.summary.scalar('Duration/Episode', step, step=e)
                         tf.summary.scalar('Average Loss/Episode', agent.avg_loss / float(step), step=e)
 
-                print("episode:", e, "  score:", score, "  memory length:",
-                      len(agent.memory), "  epsilon:", agent.epsilon,
-                      "  global_step:", global_step, "  average_q:",
-                      agent.avg_q_max / float(step), "  average loss:",
-                      agent.avg_loss / float(step))
+                score_avg = 0.9 * score_avg + 0.1 * score if score_avg != 0 else score
+
+                print("episode: {:3d} | score avg: {:3.2f} | memory length: {:4d} | epsilon: {:.4f} | q avg : {:3.2f} | avg loss : {:3.2f}".format(
+                      e, score_avg, len(agent.memory), agent.epsilon, agent.avg_q_max / float(step), agent.avg_loss / float(step)))
 
                 agent.avg_q_max, agent.avg_loss = 0, 0
 
