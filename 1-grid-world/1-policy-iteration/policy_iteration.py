@@ -48,8 +48,8 @@ class PolicyIteration:
         for state in self.env.get_all_states():
             if state == [2, 2]:
                 continue
-            value = -99999
-            max_index = []
+            
+            value_list = []
             # 반환할 정책 초기화
             result = [0.0, 0.0, 0.0, 0.0]
 
@@ -58,21 +58,16 @@ class PolicyIteration:
                 next_state = self.env.state_after_action(state, action)
                 reward = self.env.get_reward(state, action)
                 next_value = self.get_value(next_state)
-                temp = reward + self.discount_factor * next_value
+                value = reward + self.discount_factor * next_value
+                value_list.append(value)
 
-                # 받을 보상이 최대인 행동의 index(최대가 복수라면 모두)를 추출
-                if temp == value:
-                    max_index.append(index)
-                elif temp > value:
-                    value = temp
-                    max_index.clear()
-                    max_index.append(index)
+            # 받을 보상이 최대인 행동들에 대해 탐욕 정책 발전
+            max_idx_list = np.argwhere(value_list == np.amax(value_list))
+            max_idx_list = max_idx_list.flatten().tolist()
+            prob = 1 / len(max_idx_list)
 
-            # 행동의 확률 계산
-            prob = 1 / len(max_index)
-
-            for index in max_index:
-                result[index] = prob
+            for idx in max_idx_list:
+                result[idx] = prob
 
             next_policy[state[0]][state[1]] = result
 
@@ -93,7 +88,8 @@ class PolicyIteration:
 
     # 가치 함수의 값을 반환
     def get_value(self, state):
-        return round(self.value_table[state[0]][state[1]], 2)
+        value = self.value_table[state[0]][state[1]]
+        return round(value, 2)
 
 if __name__ == "__main__":
     env = Env()
