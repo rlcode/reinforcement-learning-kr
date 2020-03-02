@@ -8,9 +8,9 @@ from collections import deque
 from skimage.color import rgb2gray
 from skimage.transform import resize
 
-from tensorflow.keras.layers import Conv2D, Dense, Flatten
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.initializers import RandomUniform
+from tensorflow.keras.layers import Conv2D, Dense, Flatten
 
 
 class DQN(tf.keras.Model):
@@ -26,14 +26,12 @@ class DQN(tf.keras.Model):
                             kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
     def call(self, x):
-
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.flatten(x)
         x = self.fc(x)
         q = self.fc_out(x)
-
         return q
 
 
@@ -60,8 +58,8 @@ class DQNAgent:
 
         self.model = DQN(action_size, state_size)
         self.target_model = DQN(action_size, state_size)
-        self.huber_loss = tf.keras.losses.Huber()
-        self.optimizer = RMSprop(self.learning_rate, epsilon=0.01)
+        self.optimizer = RMSprop(self.learning_rate, decay=0.99, epsilon=0.01,
+                                 clipnorm=1)
 
         self.avg_q_max, self.avg_loss = 0, 0
 
@@ -115,8 +113,6 @@ class DQNAgent:
             quadratic_part = tf.clip_by_value(error, 0.0, 1.0)
             linear_part = error - quadratic_part
             loss = tf.reduce_mean(0.5 * tf.square(quadratic_part) + linear_part)
-            # loss = self.huber_loss(targets, predicts)
-            # loss = tf.reduce_mean(tf.square(targets - predicts))
             self.avg_loss += loss.numpy()
 
         grads = tape.gradient(loss, model_params)
@@ -136,6 +132,8 @@ def main():
 
     global_step = 0
     score_avg = 0
+    score_max = 0
+    action_dict = {0:1, 1:2, 2:3, 3:3}
 
     num_episode = 50000
     for e in range(num_episode):
@@ -161,12 +159,10 @@ def main():
             # 바로 전 4개의 상태로 행동을 선택
             action = agent.get_action(history)
             # 1: 정지, 2: 왼쪽, 3: 오른쪽
-            if action == 0:
-                real_action = 1
-            elif action == 1:
-                real_action = 2
-            else:
-                real_action = 3
+            real_action = action_dict[action]
+            # 죽었을 때 시작하기 위해 발사 행동을 함
+            if dead:
+                action, real_action, dead = 0, 1, False
 
             # 선택한 행동으로 환경에서 한 타임스텝 진행
             observe, reward, done, info = env.step(real_action)
@@ -181,6 +177,7 @@ def main():
                 dead = True
                 start_life = info['ale.lives']
 
+            score += reward
             reward = np.clip(reward, -1., 1.)
             # 샘플 <s, a, r, s'>을 리플레이 메모리에 저장 후 학습
             agent.append_sample(history, action, reward, next_history, dead)
@@ -192,10 +189,10 @@ def main():
             if (global_step % agent.update_target_rate == 0 and global_step > agent.train_start):
                 agent.update_target_model()
 
-            score += reward
-
             if dead:
-                dead = False
+                history = np.stack((next_state, next_state,
+                                    next_state, next_state), axis=2)
+                history = np.reshape([history], (1, 84, 84, 4))
             else:
                 history = next_history
 
@@ -210,15 +207,16 @@ def main():
                         tf.summary.scalar('Average Loss/Episode', agent.avg_loss / float(step), step=e)
 
                 score_avg = 0.9 * score_avg + 0.1 * score if score_avg != 0 else score
+                score_max = score if score > score_max else score_max
 
-                print("episode: {:3d} | score avg: {:3.2f} | memory length: {:4d} | epsilon: {:.4f} | q avg : {:3.2f} | avg loss : {:3.2f}".format(
-                      e, score_avg, len(agent.memory), agent.epsilon, agent.avg_q_max / float(step), agent.avg_loss / float(step)))
+                print("episode: {:3d} | score: {:3.2f} | score max : {:3.2f} | score avg: {:3.2f} | memory length: {:4d} | epsilon: {:.4f} | q avg : {:3.2f} | avg loss : {:3.2f}".format(
+                      e, score, score_max, score_avg, len(agent.memory), agent.epsilon, agent.avg_q_max / float(step), agent.avg_loss / float(step)))
 
                 agent.avg_q_max, agent.avg_loss = 0, 0
 
         # 1000 에피소드마다 모델 저장
         if e % 1000 == 0:
-            agent.model.save_weights("./save_model/breakout_dqn.h5")
+            agent.model.save_weights("./save_model/model", save_format="tf")
 
 
 if __name__ == "__main__":
