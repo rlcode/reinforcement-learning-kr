@@ -8,8 +8,7 @@ from collections import deque
 from skimage.color import rgb2gray
 from skimage.transform import resize
 
-from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.initializers import RandomUniform
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Conv2D, Dense, Flatten
 
 
@@ -22,8 +21,7 @@ class DQN(tf.keras.Model):
         self.conv3 = Conv2D(64, (3, 3), strides=(1, 1), activation='relu')
         self.flatten = Flatten()
         self.fc = Dense(512, activation='relu')
-        self.fc_out = Dense(action_size,
-                            kernel_initializer=RandomUniform(-1e-3, 1e-3))
+        self.fc_out = Dense(action_size)
 
     def call(self, x):
         x = self.conv1(x)
@@ -43,7 +41,7 @@ class DQNAgent:
         self.action_size = action_size
 
         self.discount_factor = 0.99
-        self.learning_rate = 0.00025
+        self.learning_rate = 1e-4
         self.epsilon = 1.
         self.epsilon_start, self.epsilon_end = 1.0, 0.1
         self.exploration_steps = 1000000.
@@ -51,15 +49,14 @@ class DQNAgent:
         self.epsilon_decay_step /= self.exploration_steps
         self.batch_size = 32
         self.train_start = 50000
-        self.update_target_rate = 10000
+        self.update_target_rate = 5000
 
-        self.memory = deque(maxlen=400000)
+        self.memory = deque(maxlen=200000)
         self.no_op_steps = 30
 
         self.model = DQN(action_size, state_size)
         self.target_model = DQN(action_size, state_size)
-        self.optimizer = RMSprop(self.learning_rate, decay=0.99, epsilon=0.01,
-                                 clipnorm=1)
+        self.optimizer = Adam(self.learning_rate, clipnorm=1)
 
         self.avg_q_max, self.avg_loss = 0, 0
 
