@@ -10,7 +10,7 @@ from skimage.color import rgb2gray
 from skimage.transform import resize
 
 from tensorflow.keras.initializers import RandomUniform
-from tensorflow.compat.v1.train import RMSPropOptimizer
+from tensorflow.compat.v1.train import RMSPropOptimizer, AdamOptimizer
 from tensorflow.keras.layers import Conv2D, Flatten, Dense
 
 # 멀티쓰레딩을 위한 글로벌 변수
@@ -31,13 +31,10 @@ class ActorCritic(tf.keras.Model):
         self.flatten = Flatten()
         self.shared_fc = Dense(512, activation='relu')
 
-        self.policy = Dense(action_size, activation='linear',
-                            kernel_initializer=RandomUniform(-1e-3, 1e-3))
-        self.value = Dense(1, activation='linear',
-                           kernel_initializer=RandomUniform(-1e-3, 1e-3))
+        self.policy = Dense(action_size, activation='linear')
+        self.value = Dense(1, activation='linear')
 
     def call(self, x):
-
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.flatten(x)
@@ -45,7 +42,6 @@ class ActorCritic(tf.keras.Model):
 
         policy = self.policy(x)
         value = self.value(x)
-
         return policy, value
 
 
@@ -58,7 +54,7 @@ class A3CAgent():
         # A3C 하이퍼파라미터
         self.discount_factor = 0.99
         self.no_op_steps = 30
-        self.lr = 2.5e-4
+        self.lr = 1e-4
         # 쓰레드의 갯수
         self.threads = 16
 
@@ -67,10 +63,8 @@ class A3CAgent():
         self.global_model(tf.convert_to_tensor(np.random.random((1, *self.state_size)), dtype=tf.float32))
 
         # 인공신경망 업데이트하는 옵티마이저 함수 생성
-        self.optimizer = RMSPropOptimizer(self.lr,
-                                          decay=0.99,
-                                          epsilon=0.01,
-                                          use_locking=True)
+        self.optimizer = AdamOptimizer(self.lr,
+                                       use_locking=True)
 
         self.writer = tf.summary.create_file_writer('summary/breakout_a3c')
 
@@ -167,17 +161,17 @@ class Runner(threading.Thread):
 
         # 가치 신경망 업데이트
         advantages = discounted_prediction - values
-        value_loss = tf.reduce_mean(tf.square(advantages))
+        value_loss = 0.5 * tf.reduce_sum(tf.square(advantages))
 
         # 정책 신경망 업데이트
         action = tf.convert_to_tensor(self.actions, dtype=tf.float32)
         policy_prob = tf.nn.softmax(policy)
         action_prob = tf.reduce_sum(action * policy_prob, axis=1, keepdims=True)
         cross_entropy = tf.math.log(action_prob + 1e-10) * tf.stop_gradient(advantages)
-        cross_entropy = -tf.reduce_mean(cross_entropy)
+        cross_entropy = -tf.reduce_sum(cross_entropy)
 
         entropy = tf.reduce_sum(policy_prob * tf.math.log(policy_prob + 1e-10), axis=1)
-        entropy = tf.reduce_mean(entropy)
+        entropy = tf.reduce_sum(entropy)
 
         policy_loss = cross_entropy + 0.01 * entropy
 
@@ -190,7 +184,7 @@ class Runner(threading.Thread):
         with tf.GradientTape() as tape:
             total_loss = self.compute_loss(done)
         grads = tape.gradient(total_loss, self.local_model.trainable_weights)
-        grads, _ = tf.clip_by_global_norm(grads, 5.0)
+        grads, _ = tf.clip_by_global_norm(grads, 40.0)
         self.optimizer.apply_gradients(zip(grads, self.global_model.trainable_variables))
 
         self.local_model.set_weights(self.global_model.get_weights())
