@@ -81,7 +81,7 @@ class Env(tk.Tk):
                     state = [i, j]
                     if str(state) in q_table.keys():
                         temp = q_table[str(state)][action]
-                        self.text_value(j, i, round(temp, 2), action)
+                        self.text_value(j, i, round(temp, 3), action)
 
     def coords_to_state(self, coords):
         x = int((coords[0] - 50) / 100)
