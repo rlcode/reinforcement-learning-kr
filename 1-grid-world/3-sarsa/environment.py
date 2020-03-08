@@ -80,7 +80,7 @@ class Env(tk.Tk):
                     state = [x, y]
                     if str(state) in q_table.keys():
                         temp = q_table[str(state)][action]
-                        self.text_value(y, x, round(temp, 2), action)
+                        self.text_value(y, x, round(temp, 3), action)
 
     def coords_to_state(self, coords):
         x = int((coords[0] - 50) / 100)
@@ -132,9 +132,6 @@ class Env(tk.Tk):
             done = False
 
         next_state = self.coords_to_state(next_state)
-
-
-
         return next_state, reward, done
 
     def render(self):
