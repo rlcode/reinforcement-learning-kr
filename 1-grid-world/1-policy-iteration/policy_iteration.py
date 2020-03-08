@@ -38,7 +38,7 @@ class PolicyIteration:
                 value += (self.get_policy(state)[action] *
                           (reward + self.discount_factor * next_value))
 
-            next_value_table[state[0]][state[1]] = round(value, 2)
+            next_value_table[state[0]][state[1]] = value
 
         self.value_table = next_value_table
 
@@ -73,23 +73,20 @@ class PolicyIteration:
 
         self.policy_table = next_policy
 
-    # 특정 상태에서 정책에 따른 행동을 반환
+    # 특정 상태에서 정책에 따라 무작위로 행동을 반환
     def get_action(self, state):
-        # 정책에 담긴 행동 중에 무작위로 한 행동을 추출
         policy = self.get_policy(state)
         policy = np.array(policy)
         return np.random.choice(4, 1, p=policy)[0]
 
     # 상태에 따른 정책 반환
     def get_policy(self, state):
-        if state == [2, 2]:
-            return 0.0
         return self.policy_table[state[0]][state[1]]
 
     # 가치 함수의 값을 반환
     def get_value(self, state):
-        value = self.value_table[state[0]][state[1]]
-        return round(value, 2)
+        return self.value_table[state[0]][state[1]]
+
 
 if __name__ == "__main__":
     env = Env()
