@@ -17,7 +17,7 @@ class Env(tk.Tk):
         self.render_speed=render_speed
         self.action_space = ['u', 'd', 'l', 'r']
         self.action_size = len(self.action_space)
-        self.title('DeepSARSA')
+        self.title('REINFORCE')
         self.geometry('{0}x{1}'.format(HEIGHT * UNIT, HEIGHT * UNIT))
         self.shapes = self.load_images()
         self.canvas = self._build_canvas()

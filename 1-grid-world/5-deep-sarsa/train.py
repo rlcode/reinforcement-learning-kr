@@ -114,7 +114,7 @@ if __name__ == "__main__":
                 episodes.append(e)
                 pylab.plot(episodes, scores, 'b')
                 pylab.xlabel("episode")
-                pylab.ylabel("average score")
+                pylab.ylabel("score")
                 pylab.savefig("./save_graph/graph.png")
 
 

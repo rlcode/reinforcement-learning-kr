@@ -36,7 +36,6 @@ class DeepSARSAgent:
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
         else:
-            state = np.float32(state)
             q_values = self.model(state)
             return np.argmax(q_values[0])
 
