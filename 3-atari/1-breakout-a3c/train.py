@@ -67,9 +67,7 @@ class A3CAgent():
                                        use_locking=True)
 
         self.writer = tf.summary.create_file_writer('summary/breakout_a3c')
-
         self.model_path = os.path.join(os.getcwd(), 'save_model', 'model')
-        os.makedirs(self.model_path, exist_ok=True)
 
     # 쓰레드를 만들어 학습을 하는 함수
     def train(self):

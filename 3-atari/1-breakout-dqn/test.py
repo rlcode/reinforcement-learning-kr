@@ -1,9 +1,7 @@
-import os
 import gym
 import random
 import numpy as np
 import tensorflow as tf
-from collections import deque
 
 from skimage.color import rgb2gray
 from skimage.transform import resize
@@ -33,7 +31,7 @@ class DQN(tf.keras.Model):
 
 
 class DQNAgent:
-    def __init__(self, action_size, state_size=(84, 84, 4), 
+    def __init__(self, action_size, state_size=(84, 84, 4),
                  model_path='./save_model/model'):
         self.render = False
 
@@ -45,11 +43,8 @@ class DQNAgent:
 
     def get_action(self, history):
         history = np.float32(history / 255.0)
-        if np.random.rand() <= self.epsilon:
-            return random.randrange(self.action_size)
-        else:
-            q_value = self.model.predict(history)
-            return np.argmax(q_value[0])
+        q_value = self.model.predict(history)
+        return np.argmax(q_value[0])
 
 
 def pre_processing(next_observe, observe):
@@ -59,7 +54,7 @@ def pre_processing(next_observe, observe):
     return processed_observe
 
 
-def main():
+if __name__ == "__main__":
     env = gym.make("BreakoutDeterministic-v4")
     state_size = (84, 84, 4)
     action_size = 3
@@ -68,7 +63,7 @@ def main():
     agent = DQNAgent(action_size, state_size, model_path)
     action_dict = {0:1, 1:2, 2:3, 3:3}
 
-    num_episode = 10
+    num_episode = 30
     for e in range(num_episode):
         done = False
         dead = False
@@ -77,15 +72,18 @@ def main():
         observe = env.reset()
         next_observe = observe
 
+        for _ in range(random.randint(1, 30)):
+            observe, _, _, _ = env.step(1)
+
         state = pre_processing(next_observe, observe)
         history = np.stack([state, state, state, state], axis=2)
         history = np.reshape([history], (1, 84, 84, 4))
 
         while not done:
-            env.render()
+            # env.render()
 
             observe = next_observe
-            action, policy = agent.get_action(history)
+            action = agent.get_action(history)
 
             real_action = action_dict[action]
 
@@ -95,13 +93,13 @@ def main():
             next_observe, reward, done, info = env.step(real_action)
 
             next_state = pre_processing(next_observe, observe)
+            next_state = np.reshape([next_state], (1, 84, 84, 1))
             next_history = np.append(next_state, history[:, :, :, :3], axis=3)
 
             if start_life > info['ale.lives']:
                 dead, start_life = True, info['ale.lives']
 
             score += reward
-            reward = np.clip(reward, -1., 1.)
 
             if dead:
                 history = np.stack((next_state, next_state,
@@ -112,7 +110,3 @@ def main():
 
             if done:
                 print("episode: {:3d} | score : {:3.2f}".format(e, score))
-
-
-if __name__ == "__main__":
-    main()

@@ -43,32 +43,35 @@ class DQNAgent:
         self.discount_factor = 0.99
         self.learning_rate = 1e-4
         self.epsilon = 1.
-        self.epsilon_start, self.epsilon_end = 1.0, 0.1
+        self.epsilon_start, self.epsilon_end = 1.0, 0.02
         self.exploration_steps = 1000000.
         self.epsilon_decay_step = self.epsilon_start - self.epsilon_end
         self.epsilon_decay_step /= self.exploration_steps
         self.batch_size = 32
         self.train_start = 50000
-        self.update_target_rate = 5000
+        self.update_target_rate = 10000
 
-        self.memory = deque(maxlen=200000)
+        self.memory = deque(maxlen=100000)
         self.no_op_steps = 30
 
         self.model = DQN(action_size, state_size)
         self.target_model = DQN(action_size, state_size)
-        self.optimizer = Adam(self.learning_rate, clipnorm=1)
+        self.optimizer = Adam(self.learning_rate, clipnorm=10.)
 
         self.avg_q_max, self.avg_loss = 0, 0
 
         self.update_target_model()
 
-        self.writer = tf.summary.create_file_writer('summary/breakout_a3c')
+        self.writer = tf.summary.create_file_writer('summary/breakout_dqn')
 
-        self.model_path = os.path.join(os.getcwd(), 'save_model')
+        self.model_path = os.path.join(os.getcwd(), 'save_model', 'model')
         os.makedirs(self.model_path, exist_ok=True)
 
     def update_target_model(self):
         self.target_model.set_weights(self.model.get_weights())
+
+    def huber_loss(self, x):
+        return tf.where(tf.abs(x) < 1.0, 0.5 * tf.square(x), tf.abs(x) - 0.5)
 
     def get_action(self, history):
         history = np.float32(history / 255.0)
@@ -94,6 +97,7 @@ class DQNAgent:
         dones = np.array([sample[4] for sample in mini_batch])
 
         model_params = self.model.trainable_variables
+
         with tf.GradientTape() as tape:
             tape.watch(model_params)
 
@@ -123,7 +127,12 @@ def pre_processing(observe):
     return processed_observe
 
 
-def main():
+if __name__ == "__main__":
+    if tf.test.is_gpu_available():
+        print("Using GPU")
+        physical_devices = tf.config.experimental.list_physical_devices('GPU')
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
     env = gym.make('BreakoutDeterministic-v4')
     agent = DQNAgent(action_size=3)
 
@@ -214,9 +223,3 @@ def main():
         # 1000 에피소드마다 모델 저장
         if e % 1000 == 0:
             agent.model.save_weights("./save_model/model", save_format="tf")
-
-
-if __name__ == "__main__":
-    physical_devices = tf.config.experimental.list_physical_devices('GPU')
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-    main()
