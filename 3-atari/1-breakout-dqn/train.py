@@ -8,12 +8,8 @@ from collections import deque
 from skimage.color import rgb2gray
 from skimage.transform import resize
 
-from tensorflow.compat.v1 import train
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Conv2D, Dense, Flatten
-from tensorflow.keras.optimizers import RMSprop
-
-EPISODES = 50000
-os.environ["CUDA_VISIBLE_DEVICES"] ="5"
 
 
 class DQN(tf.keras.Model):
@@ -28,14 +24,12 @@ class DQN(tf.keras.Model):
         self.fc_out = Dense(action_size)
 
     def call(self, x):
-
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.flatten(x)
         x = self.fc(x)
         q = self.fc_out(x)
-
         return q
 
 
@@ -47,35 +41,37 @@ class DQNAgent:
         self.action_size = action_size
 
         self.discount_factor = 0.99
-        self.learning_rate = 0.00025
+        self.learning_rate = 1e-4
         self.epsilon = 1.
-        self.epsilon_start, self.epsilon_end = 1.0, 0.1
+        self.epsilon_start, self.epsilon_end = 1.0, 0.02
         self.exploration_steps = 1000000.
-        self.epsilon_decay_step = (self.epsilon_start - self.epsilon_end) \
-            / self.exploration_steps
+        self.epsilon_decay_step = self.epsilon_start - self.epsilon_end
+        self.epsilon_decay_step /= self.exploration_steps
         self.batch_size = 32
         self.train_start = 50000
         self.update_target_rate = 10000
 
-        self.memory = deque(maxlen=400000)
+        self.memory = deque(maxlen=100000)
         self.no_op_steps = 30
 
         self.model = DQN(action_size, state_size)
         self.target_model = DQN(action_size, state_size)
-        self.huber_loss = tf.keras.losses.Huber()
-        self.optimizer = RMSprop(self.learning_rate, epsilon=0.01)
+        self.optimizer = Adam(self.learning_rate, clipnorm=10.)
 
         self.avg_q_max, self.avg_loss = 0, 0
 
         self.update_target_model()
 
-        self.writer = tf.summary.create_file_writer('summary/breakout_a3c')
+        self.writer = tf.summary.create_file_writer('summary/breakout_dqn')
 
-        self.model_path = os.path.join(os.getcwd(), 'save_model')
+        self.model_path = os.path.join(os.getcwd(), 'save_model', 'model')
         os.makedirs(self.model_path, exist_ok=True)
 
     def update_target_model(self):
         self.target_model.set_weights(self.model.get_weights())
+
+    def huber_loss(self, x):
+        return tf.where(tf.abs(x) < 1.0, 0.5 * tf.square(x), tf.abs(x) - 0.5)
 
     def get_action(self, history):
         history = np.float32(history / 255.0)
@@ -101,6 +97,7 @@ class DQNAgent:
         dones = np.array([sample[4] for sample in mini_batch])
 
         model_params = self.model.trainable_variables
+
         with tf.GradientTape() as tape:
             tape.watch(model_params)
 
@@ -112,13 +109,11 @@ class DQNAgent:
 
             max_q = np.amax(target_predicts, axis=1)
             targets = rewards + (1 - dones) * self.discount_factor * max_q
-            
+
             error = tf.abs(targets - predicts)
             quadratic_part = tf.clip_by_value(error, 0.0, 1.0)
             linear_part = error - quadratic_part
             loss = tf.reduce_mean(0.5 * tf.square(quadratic_part) + linear_part)
-            # loss = self.huber_loss(targets, predicts)
-            # loss = tf.reduce_mean(tf.square(targets - predicts))
             self.avg_loss += loss.numpy()
 
         grads = tape.gradient(loss, model_params)
@@ -132,13 +127,17 @@ def pre_processing(observe):
     return processed_observe
 
 
-def main():
+if __name__ == "__main__":
     env = gym.make('BreakoutDeterministic-v4')
     agent = DQNAgent(action_size=3)
 
-    scores, episodes, global_step = [], [], 0
+    global_step = 0
+    score_avg = 0
+    score_max = 0
+    action_dict = {0:1, 1:2, 2:3, 3:3}
 
-    for e in range(EPISODES):
+    num_episode = 50000
+    for e in range(num_episode):
         done = False
         dead = False
 
@@ -161,12 +160,10 @@ def main():
             # 바로 전 4개의 상태로 행동을 선택
             action = agent.get_action(history)
             # 1: 정지, 2: 왼쪽, 3: 오른쪽
-            if action == 0:
-                real_action = 1
-            elif action == 1:
-                real_action = 2
-            else:
-                real_action = 3
+            real_action = action_dict[action]
+            # 죽었을 때 시작하기 위해 발사 행동을 함
+            if dead:
+                action, real_action, dead = 0, 1, False
 
             # 선택한 행동으로 환경에서 한 타임스텝 진행
             observe, reward, done, info = env.step(real_action)
@@ -181,6 +178,7 @@ def main():
                 dead = True
                 start_life = info['ale.lives']
 
+            score += reward
             reward = np.clip(reward, -1., 1.)
             # 샘플 <s, a, r, s'>을 리플레이 메모리에 저장 후 학습
             agent.append_sample(history, action, reward, next_history, dead)
@@ -189,22 +187,19 @@ def main():
                 agent.train_model()
 
             # 일정 시간마다 타겟모델을 모델의 가중치로 업데이트
-            if (global_step % agent.update_target_rate == 0 
-                and global_step > agent.train_start):
+            if (global_step % agent.update_target_rate == 0 and global_step > agent.train_start):
                 agent.update_target_model()
 
-            score += reward
-
             if dead:
-                dead = False
+                history = np.stack((next_state, next_state,
+                                    next_state, next_state), axis=2)
+                history = np.reshape([history], (1, 84, 84, 4))
             else:
                 history = next_history
 
             if done:
                 # 각 에피소드 당 학습 정보를 기록
                 if global_step > agent.train_start:
-                    stats = [score, agent.avg_q_max / float(step), step,
-                             agent.avg_loss / float(step)]
 
                     with agent.writer.as_default():
                         tf.summary.scalar('Total Reward/Episode', score, step=e)
@@ -212,20 +207,14 @@ def main():
                         tf.summary.scalar('Duration/Episode', step, step=e)
                         tf.summary.scalar('Average Loss/Episode', agent.avg_loss / float(step), step=e)
 
-                print("episode:", e, "  score:", score, "  memory length:",
-                      len(agent.memory), "  epsilon:", agent.epsilon,
-                      "  global_step:", global_step, "  average_q:",
-                      agent.avg_q_max / float(step), "  average loss:",
-                      agent.avg_loss / float(step))
+                score_avg = 0.9 * score_avg + 0.1 * score if score_avg != 0 else score
+                score_max = score if score > score_max else score_max
+
+                print("episode: {:3d} | score: {:3.2f} | score max : {:3.2f} | score avg: {:3.2f} | memory length: {:4d} | epsilon: {:.4f} | q avg : {:3.2f} | avg loss : {:3.2f}".format(
+                      e, score, score_max, score_avg, len(agent.memory), agent.epsilon, agent.avg_q_max / float(step), agent.avg_loss / float(step)))
 
                 agent.avg_q_max, agent.avg_loss = 0, 0
 
         # 1000 에피소드마다 모델 저장
         if e % 1000 == 0:
-            agent.model.save_weights("./save_model/breakout_dqn.h5")
-
-
-if __name__ == "__main__":
-    physical_devices = tf.config.experimental.list_physical_devices('GPU')
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-    main()
+            agent.model.save_weights("./save_model/model", save_format="tf")
