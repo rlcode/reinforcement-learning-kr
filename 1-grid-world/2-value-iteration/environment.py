@@ -197,7 +197,7 @@ class GraphicDisplay(tk.Tk):
     def print_values(self, values):
         for i in range(WIDTH):
             for j in range(HEIGHT):
-                self.text_value(i, j, values[i][j])
+                self.text_value(i, j, round(values[i][j], 2))
 
     def render(self):
         time.sleep(0.1)
