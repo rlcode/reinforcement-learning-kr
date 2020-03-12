@@ -5,9 +5,9 @@ from PIL import ImageTk, Image
 
 np.random.seed(1)
 PhotoImage = ImageTk.PhotoImage
-UNIT = 100  # 필셀 수
-HEIGHT = 5  # 그리드 월드 가로
-WIDTH = 5  # 그리드 월드 세로
+UNIT = 100  # 픽셀 수
+HEIGHT = 5  # 그리드월드 세로
+WIDTH = 5  # 그리드월드 가로
 
 
 class Env(tk.Tk):
@@ -15,7 +15,7 @@ class Env(tk.Tk):
         super(Env, self).__init__()
         self.action_space = ['u', 'd', 'l', 'r']
         self.n_actions = len(self.action_space)
-        self.title('SARSA')
+        self.title('Q Learning')
         self.geometry('{0}x{1}'.format(HEIGHT * UNIT, HEIGHT * UNIT))
         self.shapes = self.load_images()
         self.canvas = self._build_canvas()
@@ -55,6 +55,7 @@ class Env(tk.Tk):
 
     def text_value(self, row, col, contents, action, font='Helvetica', size=10,
                    style='normal', anchor="nw"):
+
         if action == 0:
             origin_x, origin_y = 7, 42
         elif action == 1:
@@ -74,17 +75,22 @@ class Env(tk.Tk):
         for i in self.texts:
             self.canvas.delete(i)
         self.texts.clear()
-        for x in range(HEIGHT):
-            for y in range(WIDTH):
+        for i in range(HEIGHT):
+            for j in range(WIDTH):
                 for action in range(0, 4):
-                    state = [x, y]
+                    state = [i, j]
                     if str(state) in q_table.keys():
                         temp = q_table[str(state)][action]
-                        self.text_value(y, x, round(temp, 2), action)
+                        self.text_value(j, i, round(temp, 3), action)
 
     def coords_to_state(self, coords):
         x = int((coords[0] - 50) / 100)
         y = int((coords[1] - 50) / 100)
+        return [x, y]
+
+    def state_to_coords(self, state):
+        x = int(state[0] * 100 + 50)
+        y = int(state[1] * 100 + 50)
         return [x, y]
 
     def reset(self):
@@ -132,9 +138,6 @@ class Env(tk.Tk):
             done = False
 
         next_state = self.coords_to_state(next_state)
-
-
-
         return next_state, reward, done
 
     def render(self):
