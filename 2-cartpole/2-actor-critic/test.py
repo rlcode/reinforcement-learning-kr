@@ -38,7 +38,7 @@ class A2CAgent:
 
         # 정책신경망과 가치신경망 생성
         self.model = A2C(self.action_size)
-        self.model.load_weights("./save_model/model")
+        self.model.load_weights("./save_model/trained/model")
 
     # 정책신경망의 출력을 받아 확률적으로 행동을 선택
     def get_action(self, state):
