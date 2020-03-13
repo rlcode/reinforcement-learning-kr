@@ -57,19 +57,20 @@ class A2CAgent:
     def train_model(self, state, action, reward, next_state, done):
         model_params = self.model.trainable_variables
         with tf.GradientTape() as tape:
-            # 가치 신경망 오류 함수 구하기
             policy, value = self.model(state)
             _, next_value = self.model(next_state)
             target = reward + (1 - done) * self.discount_factor * next_value[0]
-            critic_loss = 0.5 * tf.square(tf.stop_gradient(target) - value[0])
-            critic_loss = tf.reduce_mean(critic_loss)
 
             # 정책 신경망 오류 함수 구하기
             one_hot_action = tf.one_hot([action], self.action_size)
             action_prob = tf.reduce_sum(one_hot_action * policy, axis=1)
+            cross_entropy = - tf.math.log(action_prob + 1e-5)
             advantage = tf.stop_gradient(target - value[0])
-            actor_loss = tf.math.log(action_prob + 1e-5) * advantage
-            actor_loss = -tf.reduce_mean(actor_loss)
+            actor_loss = tf.reduce_mean(cross_entropy * advantage)
+
+            # 가치 신경망 오류 함수 구하기
+            critic_loss = 0.5 * tf.square(tf.stop_gradient(target) - value[0])
+            critic_loss = tf.reduce_mean(critic_loss)
 
             # 하나의 오류 함수로 만들기
             loss = 0.2 * actor_loss + critic_loss
