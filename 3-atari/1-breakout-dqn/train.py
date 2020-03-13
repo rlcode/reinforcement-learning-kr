@@ -12,6 +12,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Conv2D, Dense, Flatten
 
 
+# 상태가 입력, 큐함수가 출력인 인공신경망 생성
 class DQN(tf.keras.Model):
     def __init__(self, action_size, state_size):
         super(DQN, self).__init__()
@@ -33,13 +34,16 @@ class DQN(tf.keras.Model):
         return q
 
 
+# 브레이크아웃 예제에서의 DQN 에이전트
 class DQNAgent:
     def __init__(self, action_size, state_size=(84, 84, 4)):
         self.render = False
 
+        # 상태와 행동의 크기 정의
         self.state_size = state_size
         self.action_size = action_size
 
+        # DQN 하이퍼파라미터
         self.discount_factor = 0.99
         self.learning_rate = 1e-4
         self.epsilon = 1.
@@ -51,34 +55,41 @@ class DQNAgent:
         self.train_start = 50000
         self.update_target_rate = 10000
 
+        # 리플레이 메모리, 최대 크기 100,000
         self.memory = deque(maxlen=100000)
+        # 게임 시작 후 랜덤하게 움직이지 않는 것에 대한 옵션
         self.no_op_steps = 30
 
+        # 모델과 타깃 모델 생성
         self.model = DQN(action_size, state_size)
         self.target_model = DQN(action_size, state_size)
-        self.update_target_model()
-
         self.optimizer = Adam(self.learning_rate, clipnorm=10.)
+        # 타깃 모델 초기화
+        self.update_target_model()
 
         self.avg_q_max, self.avg_loss = 0, 0
 
         self.writer = tf.summary.create_file_writer('summary/breakout_dqn')
         self.model_path = os.path.join(os.getcwd(), 'save_model', 'model')
 
+    # 타깃 모델을 모델의 가중치로 업데이트
     def update_target_model(self):
         self.target_model.set_weights(self.model.get_weights())
 
+    # 입실론 탐욕 정책으로 행동 선택
     def get_action(self, history):
         history = np.float32(history / 255.0)
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
         else:
-            q_value = self.model.predict(history)
+            q_value = self.model(history)
             return np.argmax(q_value[0])
 
+    # 샘플 <s, a, r, s'>을 리플레이 메모리에 저장
     def append_sample(self, history, action, reward, next_history, dead):
         self.memory.append((history, action, reward, next_history, dead))
 
+    # 텐서보드에 학습 정보를 기록
     def draw_tensorboard(self, score, step, episode):
         with self.writer.as_default():
             tf.summary.scalar('Total Reward/Episode', score, step=episode)
@@ -88,10 +99,12 @@ class DQNAgent:
             tf.summary.scalar('Average Loss/Episode',
                               self.avg_loss / float(step), step=episode)
 
+    # 리플레이 메모리에서 무작위로 추출한 배치로 모델 학습
     def train_model(self):
         if self.epsilon > self.epsilon_end:
             self.epsilon -= self.epsilon_decay_step
 
+        # 메모리에서 배치 크기만큼 무작위로 샘플 추출
         batch = random.sample(self.memory, self.batch_size)
 
         history = np.array([sample[0][0] / 255. for sample in batch],
@@ -125,6 +138,7 @@ class DQNAgent:
 
             self.avg_loss += loss.numpy()
 
+        # 오류함수를 줄이는 방향으로 모델 업데이트
         grads = tape.gradient(loss, model_params)
         self.optimizer.apply_gradients(zip(grads, model_params))
 
@@ -137,12 +151,15 @@ def pre_processing(observe):
 
 
 if __name__ == "__main__":
+    # 환경과 DQN 에이전트 생성
     env = gym.make('BreakoutDeterministic-v4')
     agent = DQNAgent(action_size=3)
 
     global_step = 0
     score_avg = 0
     score_max = 0
+
+    # 불필요한 행동을 없애주기 위한 딕셔너리 선언
     action_dict = {0:1, 1:2, 2:3, 3:3}
 
     num_episode = 50000
@@ -151,11 +168,14 @@ if __name__ == "__main__":
         dead = False
 
         step, score, start_life = 0, 0, 5
+        # env 초기화
         observe = env.reset()
 
+        # 랜덤으로 뽑힌 값 만큼의 프레임동안 움직이지 않음
         for _ in range(random.randint(1, agent.no_op_steps)):
             observe, _, _, _ = env.step(1)
 
+        # 프레임을 전처리 한 후 4개의 상태를 쌓아서 입력값으로 사용.
         state = pre_processing(observe)
         history = np.stack((state, state, state, state), axis=2)
         history = np.reshape([history], (1, 84, 84, 4))
@@ -166,10 +186,11 @@ if __name__ == "__main__":
             global_step += 1
             step += 1
 
-            # 바로 전 4개의 상태로 행동을 선택
+            # 바로 전 history를 입력으로 받아 행동을 선택
             action = agent.get_action(history)
             # 1: 정지, 2: 왼쪽, 3: 오른쪽
             real_action = action_dict[action]
+
             # 죽었을 때 시작하기 위해 발사 행동을 함
             if dead:
                 action, real_action, dead = 0, 1, False
