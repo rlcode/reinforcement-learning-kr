@@ -74,7 +74,7 @@ class REINFORCEAgent:
             policies = self.model(np.array(self.states))
             actions = np.array(self.actions)
             action_prob = tf.reduce_sum(actions * policies, axis=1)
-            cross_entropy = - tf.math.log(action_prob)
+            cross_entropy = - tf.math.log(action_prob + + 1e-5)
             loss = tf.reduce_sum(cross_entropy * discounted_rewards)
             entropy = - policies * tf.math.log(policies)
 
