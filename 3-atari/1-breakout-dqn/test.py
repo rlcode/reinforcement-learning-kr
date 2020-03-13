@@ -31,8 +31,7 @@ class DQN(tf.keras.Model):
 
 
 class DQNAgent:
-    def __init__(self, action_size, state_size=(84, 84, 4),
-                 model_path='./save_model/model'):
+    def __init__(self, action_size, state_size, model_path):
         self.render = False
 
         self.state_size = state_size
@@ -61,7 +60,8 @@ if __name__ == "__main__":
     env = gym.make("BreakoutDeterministic-v4")
     state_size = (84, 84, 4)
     action_size = 3
-    model_path = './save_model/model'
+    model_path = './save_model/trained/model'
+    render = False
 
     agent = DQNAgent(action_size, state_size, model_path)
     action_dict = {0:1, 1:2, 2:3, 3:3}
@@ -82,7 +82,8 @@ if __name__ == "__main__":
         history = np.reshape([history], (1, 84, 84, 4))
 
         while not done:
-            # env.render()
+            if render:
+                env.render()
 
             action = agent.get_action(history)
 
@@ -110,4 +111,4 @@ if __name__ == "__main__":
                 history = next_history
 
             if done:
-                print("episode: {:3d} | score : {:3.2f}".format(e, score))
+                print("episode: {:3d} | score : {:4.1f}".format(e, score))

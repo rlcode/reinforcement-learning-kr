@@ -56,22 +56,17 @@ class DQNAgent:
 
         self.model = DQN(action_size, state_size)
         self.target_model = DQN(action_size, state_size)
+        self.update_target_model()
+
         self.optimizer = Adam(self.learning_rate, clipnorm=10.)
 
         self.avg_q_max, self.avg_loss = 0, 0
 
-        self.update_target_model()
-
         self.writer = tf.summary.create_file_writer('summary/breakout_dqn')
-
         self.model_path = os.path.join(os.getcwd(), 'save_model', 'model')
-        os.makedirs(self.model_path, exist_ok=True)
 
     def update_target_model(self):
         self.target_model.set_weights(self.model.get_weights())
-
-    def huber_loss(self, x):
-        return tf.where(tf.abs(x) < 1.0, 0.5 * tf.square(x), tf.abs(x) - 0.5)
 
     def get_action(self, history):
         history = np.float32(history / 255.0)
@@ -84,36 +79,50 @@ class DQNAgent:
     def append_sample(self, history, action, reward, next_history, dead):
         self.memory.append((history, action, reward, next_history, dead))
 
+    def draw_tensorboard(self, score, step, episode):
+        with self.writer.as_default():
+            tf.summary.scalar('Total Reward/Episode', score, step=episode)
+            tf.summary.scalar('Average Max Q/Episode',
+                              self.avg_q_max / float(step), step=episode)
+            tf.summary.scalar('Duration/Episode', step, step=episode)
+            tf.summary.scalar('Average Loss/Episode',
+                              self.avg_loss / float(step), step=episode)
+
     def train_model(self):
         if self.epsilon > self.epsilon_end:
             self.epsilon -= self.epsilon_decay_step
 
-        mini_batch = random.sample(self.memory, self.batch_size)
+        batch = random.sample(self.memory, self.batch_size)
 
-        history = np.array([sample[0][0] / 255. for sample in mini_batch], dtype=np.float32)
-        actions = np.array([sample[1] for sample in mini_batch])
-        rewards = np.array([sample[2] for sample in mini_batch])
-        next_history = np.array([sample[3][0] / 255. for sample in mini_batch], dtype=np.float32)
-        dones = np.array([sample[4] for sample in mini_batch])
+        history = np.array([sample[0][0] / 255. for sample in batch],
+                           dtype=np.float32)
+        actions = np.array([sample[1] for sample in batch])
+        rewards = np.array([sample[2] for sample in batch])
+        next_history = np.array([sample[3][0] / 255. for sample in batch],
+                                dtype=np.float32)
+        dones = np.array([sample[4] for sample in batch])
 
+        # 학습 파라메터
         model_params = self.model.trainable_variables
-
         with tf.GradientTape() as tape:
-            tape.watch(model_params)
-
+            # 현재 상태에 대한 모델의 큐함수
             predicts = self.model(history)
             one_hot_action = tf.one_hot(actions, self.action_size)
             predicts = tf.reduce_sum(one_hot_action * predicts, axis=1)
 
+            # 다음 상태에 대한 타깃 모델의 큐함수
             target_predicts = self.target_model(next_history)
 
+            # 벨만 최적 방정식을 구성하기 위한 타깃과 큐함수의 최대 값 계산
             max_q = np.amax(target_predicts, axis=1)
             targets = rewards + (1 - dones) * self.discount_factor * max_q
 
+            # 후버로스 계산
             error = tf.abs(targets - predicts)
             quadratic_part = tf.clip_by_value(error, 0.0, 1.0)
             linear_part = error - quadratic_part
             loss = tf.reduce_mean(0.5 * tf.square(quadratic_part) + linear_part)
+
             self.avg_loss += loss.numpy()
 
         grads = tape.gradient(loss, model_params)
@@ -183,12 +192,12 @@ if __name__ == "__main__":
             # 샘플 <s, a, r, s'>을 리플레이 메모리에 저장 후 학습
             agent.append_sample(history, action, reward, next_history, dead)
 
+            # 리플레이 메모리 크기가 정해놓은 수치에 도달한 시점부터 모델 학습 시작
             if len(agent.memory) >= agent.train_start:
                 agent.train_model()
-
-            # 일정 시간마다 타겟모델을 모델의 가중치로 업데이트
-            if (global_step % agent.update_target_rate == 0 and global_step > agent.train_start):
-                agent.update_target_model()
+                # 일정 시간마다 타겟모델을 모델의 가중치로 업데이트
+                if global_step % agent.update_target_rate == 0:
+                    agent.update_target_model()
 
             if dead:
                 history = np.stack((next_state, next_state,
@@ -200,18 +209,20 @@ if __name__ == "__main__":
             if done:
                 # 각 에피소드 당 학습 정보를 기록
                 if global_step > agent.train_start:
-
-                    with agent.writer.as_default():
-                        tf.summary.scalar('Total Reward/Episode', score, step=e)
-                        tf.summary.scalar('Average Max Q/Episode', agent.avg_q_max / float(step), step=e)
-                        tf.summary.scalar('Duration/Episode', step, step=e)
-                        tf.summary.scalar('Average Loss/Episode', agent.avg_loss / float(step), step=e)
+                    agent.draw_tensorboard(score, step, e)
 
                 score_avg = 0.9 * score_avg + 0.1 * score if score_avg != 0 else score
                 score_max = score if score > score_max else score_max
 
-                print("episode: {:3d} | score: {:3.2f} | score max : {:3.2f} | score avg: {:3.2f} | memory length: {:4d} | epsilon: {:.4f} | q avg : {:3.2f} | avg loss : {:3.2f}".format(
-                      e, score, score_max, score_avg, len(agent.memory), agent.epsilon, agent.avg_q_max / float(step), agent.avg_loss / float(step)))
+                log = "episode: {:5d} | ".format(e)
+                log += "score: {:4.1f} | ".format(score)
+                log += "score max : {:4.1f} | ".format(score_max)
+                log += "score avg: {:4.1f} | ".format(score_avg)
+                log += "memory length: {:5d} | ".format(len(agent.memory))
+                log += "epsilon: {:.3f} | ".format(agent.epsilon)
+                log += "q avg : {:3.2f} | ".format(agent.avg_q_max / float(step))
+                log += "avg loss : {:3.2f}".format(agent.avg_loss / float(step))
+                print(log)
 
                 agent.avg_q_max, agent.avg_loss = 0, 0
 
