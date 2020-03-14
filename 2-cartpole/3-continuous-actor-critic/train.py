@@ -106,7 +106,6 @@ if __name__ == "__main__":
 
     # 액터-크리틱(A2C) 에이전트 생성
     agent = ContinuousA2CAgent(action_size, max_action)
-
     scores, episodes = [], []
     score_avg = 0
 
