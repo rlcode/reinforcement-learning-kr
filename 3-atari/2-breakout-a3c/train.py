@@ -112,7 +112,7 @@ class Runner(threading.Thread):
         self.env = gym.make(env_name)
         self.writer = writer
 
-        # 학습 정보를 기록할 변수            
+        # 학습 정보를 기록할 변수
         self.avg_p_max = 0
         self.avg_loss = 0
         # k-타임스텝 값 설정
@@ -120,7 +120,7 @@ class Runner(threading.Thread):
         self.t = 0
         # 불필요한 행동을 줄여주기 위한 dictionary
         self.action_dict = {0:1, 1:2, 2:3, 3:3}
-    
+
     # 텐서보드에 학습 정보를 기록
     def draw_tensorboard(self, score, step, e):
         avg_p_max = self.avg_p_max / float(step)
@@ -159,7 +159,7 @@ class Runner(threading.Thread):
             running_add = running_add * self.discount_factor + rewards[t]
             discounted_prediction[t] = running_add
         return discounted_prediction
-    
+
     # 저장된 샘플들로 A3C의 오류함수를 계산
     def compute_loss(self, done):
 
@@ -217,7 +217,7 @@ class Runner(threading.Thread):
     def run(self):
         # 액터러너끼리 공유해야하는 글로벌 변수
         global episode, score_avg, score_max
-        
+
         step = 0
         while episode < num_episode:
             done = False
