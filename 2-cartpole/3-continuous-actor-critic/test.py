@@ -9,9 +9,9 @@ from tensorflow_probability import distributions as tfd
 
 
 # 정책 신경망과 가치 신경망 생성
-class A2C(tf.keras.Model):
+class ContinuousA2C(tf.keras.Model):
     def __init__(self, action_size):
-        super(A2C, self).__init__()
+        super(ContinuousA2C, self).__init__()
         self.actor_fc1 = Dense(24, activation='tanh')
         self.actor_mu = Dense(action_size,
                               kernel_initializer=RandomUniform(-1e-3, 1e-3))
@@ -36,14 +36,14 @@ class A2C(tf.keras.Model):
 
 
 # 카트폴 예제에서의 액터-크리틱(A2C) 에이전트
-class A2CAgent:
+class ContinuousA2CAgent:
     def __init__(self, action_size, max_action):
         # 행동의 크기 정의
         self.action_size = action_size
         self.max_action = max_action
 
         # 정책신경망과 가치신경망 생성
-        self.model = A2C(self.action_size)
+        self.model = ContinuousA2C(self.action_size)
         self.model.load_weights("./save_model/trained/model")
 
     # 정책신경망의 출력을 받아 확률적으로 행동을 선택
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     max_action = env.action_space.high[0]
 
     # 액터-크리틱(A2C) 에이전트 생성
-    agent = A2CAgent(action_size, max_action)
+    agent = ContinuousA2CAgent(action_size, max_action)
 
     scores, episodes = [], []
 
