@@ -10,9 +10,9 @@ from tensorflow_probability import distributions as tfd
 
 
 # 정책 신경망과 가치 신경망 생성
-class CONTINUOUSA2C(tf.keras.Model):
+class ContinuousA2C(tf.keras.Model):
     def __init__(self, action_size):
-        super(CONTINUOUSA2C, self).__init__()
+        super(ContinuousA2C, self).__init__()
         self.actor_fc1 = Dense(24, activation='tanh')
         self.actor_mu = Dense(action_size,
                               kernel_initializer=RandomUniform(-1e-3, 1e-3))
@@ -37,7 +37,7 @@ class CONTINUOUSA2C(tf.keras.Model):
 
 
 # 카트폴 예제에서의 연속적 액터-크리틱(A2C) 에이전트
-class CONTINUOUSA2CAgent:
+class ContinuousA2CAgent:
     def __init__(self, action_size, max_action):
         self.render = False
 
@@ -50,7 +50,7 @@ class CONTINUOUSA2CAgent:
         self.learning_rate = 0.001
 
         # 정책신경망과 가치신경망 생성
-        self.model = CONTINUOUSA2C(self.action_size)
+        self.model = ContinuousA2C(self.action_size)
         # 최적화 알고리즘 설정, 미분값이 너무 커지는 현상을 막기 위해 clipnorm 설정
         self.optimizer = Adam(lr=self.learning_rate, clipnorm=1.0)
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     max_action = env.action_space.high[0]
 
     # 액터-크리틱(A2C) 에이전트 생성
-    agent = CONTINUOUSA2CAgent(action_size, max_action)
+    agent = ContinuousA2CAgent(action_size, max_action)
 
     scores, episodes = [], []
     score_avg = 0
