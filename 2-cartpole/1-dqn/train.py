@@ -96,6 +96,7 @@ class DQNAgent:
 
             # 다음 상태에 대한 타깃 모델의 큐함수
             target_predicts = self.target_model(next_states)
+            target_predicts = tf.stop_gradient(target_predicts)
 
             # 벨만 최적 방정식을 이용한 업데이트 타깃
             max_q = np.amax(target_predicts, axis=-1)

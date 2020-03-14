@@ -182,7 +182,7 @@ class GraphicDisplay(tk.Tk):
     def print_value_table(self, value_table):
         for i in range(WIDTH):
             for j in range(HEIGHT):
-                self.text_value(i, j, value_table[i][j])
+                self.text_value(i, j, round(value_table[i][j], 2))
 
     def render(self):
         time.sleep(0.1)
