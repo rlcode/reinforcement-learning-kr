@@ -1,4 +1,5 @@
 import gym
+import time
 import random
 import numpy as np
 import tensorflow as tf
@@ -64,12 +65,12 @@ if __name__ == "__main__":
     state_size = (84, 84, 4)
     action_size = 3
     model_path = './save_model/trained/model'
-    render = False
+    render = True
 
     agent = A3CTestAgent(action_size, state_size, model_path)
     action_dict = {0:1, 1:2, 2:3, 3:3}
 
-    num_episode = 30
+    num_episode = 10
     for e in range(num_episode):
         done = False
         dead = False
@@ -89,6 +90,7 @@ if __name__ == "__main__":
         while not done:
             if render:
                 env.render()
+                time.sleep(0.05)
 
             # 정책 확률에 따라 행동을 선택
             action, policy = agent.get_action(history)

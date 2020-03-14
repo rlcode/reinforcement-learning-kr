@@ -1,4 +1,5 @@
 import gym
+import time
 import random
 import numpy as np
 import tensorflow as tf
@@ -65,7 +66,7 @@ def pre_processing(observe):
 if __name__ == "__main__":
     # 환경 세팅
     env = gym.make("BreakoutDeterministic-v4")
-    render = False
+    render = True
 
     # 테스트를 위한 에이전트 생성
     state_size = (84, 84, 4)
@@ -76,7 +77,7 @@ if __name__ == "__main__":
     # 불필요한 행동을 없애주기 위한 딕셔너리 선언
     action_dict = {0:1, 1:2, 2:3, 3:3}
 
-    num_episode = 30
+    num_episode = 10
     for e in range(num_episode):
         done = False
         dead = False
@@ -97,6 +98,7 @@ if __name__ == "__main__":
         while not done:
             if render:
                 env.render()
+                time.sleep(0.05)
 
             # 바로 전 history를 입력으로 받아 행동을 선택
             action = agent.get_action(history)
