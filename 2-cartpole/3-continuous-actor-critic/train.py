@@ -10,13 +10,13 @@ from tensorflow_probability import distributions as tfd
 
 
 # 정책 신경망과 가치 신경망 생성
-class A2C(tf.keras.Model):
+class CONTINUOUSA2C(tf.keras.Model):
     def __init__(self, action_size):
-        super(A2C, self).__init__()
+        super(CONTINUOUSA2C, self).__init__()
         self.actor_fc1 = Dense(24, activation='tanh')
         self.actor_mu = Dense(action_size,
                               kernel_initializer=RandomUniform(-1e-3, 1e-3))
-        self.actor_sigma = Dense(action_size, activation='softplus',
+        self.actor_sigma = Dense(action_size, activation='sigmoid',
                                  kernel_initializer=RandomUniform(-1e-3, 1e-3))
 
         self.critic_fc1 = Dense(24, activation='tanh')
@@ -36,8 +36,8 @@ class A2C(tf.keras.Model):
         return mu, sigma, value
 
 
-# 카트폴 예제에서의 액터-크리틱(A2C) 에이전트
-class A2CAgent:
+# 카트폴 예제에서의 연속적 액터-크리틱(A2C) 에이전트
+class CONTINUOUSA2CAgent:
     def __init__(self, action_size, max_action):
         self.render = False
 
@@ -50,7 +50,7 @@ class A2CAgent:
         self.learning_rate = 0.001
 
         # 정책신경망과 가치신경망 생성
-        self.model = A2C(self.action_size)
+        self.model = CONTINUOUSA2C(self.action_size)
         # 최적화 알고리즘 설정, 미분값이 너무 커지는 현상을 막기 위해 clipnorm 설정
         self.optimizer = Adam(lr=self.learning_rate, clipnorm=1.0)
 
@@ -75,7 +75,7 @@ class A2CAgent:
             dist = tfd.Normal(loc=mu, scale=sigma)
             action_prob = dist.prob([action])[0]
             cross_entropy = - tf.math.log(action_prob + 1e-5)
-            actor_loss = tf.reduce_mean(cross_entropy * actor_loss)
+            actor_loss = tf.reduce_mean(cross_entropy * advantage)
 
             # 가치 신경망 오류 함수 구하기
             critic_loss = 0.5 * tf.square(tf.stop_gradient(target) - value[0])
@@ -87,7 +87,7 @@ class A2CAgent:
         # 오류함수를 줄이는 방향으로 모델 업데이트
         grads = tape.gradient(loss, model_params)
         self.optimizer.apply_gradients(zip(grads, model_params))
-        return loss
+        return loss, sigma
 
 
 if __name__ == "__main__":
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     max_action = env.action_space.high[0]
 
     # 액터-크리틱(A2C) 에이전트 생성
-    agent = A2CAgent(action_size, max_action)
+    agent = CONTINUOUSA2CAgent(action_size, max_action)
 
     scores, episodes = [], []
     score_avg = 0
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     for e in range(num_episode):
         done = False
         score = 0
-        loss_list = []
+        loss_list, sigma_list = [], []
         state = env.reset()
         state = np.reshape(state, [1, state_size])
 
@@ -131,15 +131,16 @@ if __name__ == "__main__":
             reward = 0.1 if not done or score == 500 else -1
 
             # 매 타임스텝마다 학습
-            loss = agent.train_model(state, action, reward, next_state, done)
+            loss, sigma = agent.train_model(state, action, reward, next_state, done)
             loss_list.append(loss)
+            sigma_list.append(sigma)
             state = next_state
 
             if done:
                 # 에피소드마다 학습 결과 출력
                 score_avg = 0.9 * score_avg + 0.1 * score if score_avg != 0 else score
-                print("episode: {:3d} | score avg: {:3.2f} | loss: {:.3f} ".format(
-                      e, score_avg, np.mean(loss_list)))
+                print("episode: {:3d} | score avg: {:3.2f} | loss: {:.3f} | sigma: {:.3f}".format(
+                      e, score_avg, np.mean(loss_list), np.mean(sigma)))
 
                 scores.append(score_avg)
                 episodes.append(e)
