@@ -46,8 +46,9 @@ class ActorCritic(tf.keras.Model):
 
 # 브레이크아웃에서의 A3CAgent 클래스 (글로벌신경망)
 class A3CAgent():
-    def __init__(self, action_size):
-        self.env_name = 'BreakoutDeterministic-v4'
+    def __init__(self, action_size, env_name):
+        self.env_name = env_name
+        # 상태와 행동의 크기 정의
         self.state_size = (84, 84, 4)
         self.action_size = action_size
         # A3C 하이퍼파라미터
@@ -59,24 +60,26 @@ class A3CAgent():
 
         # 글로벌 인공신경망 생성
         self.global_model = ActorCritic(self.action_size, self.state_size)
+        # 글로벌 인공신경망의 가중치 초기화
         self.global_model.build(tf.TensorShape((None, *self.state_size)))
 
         # 인공신경망 업데이트하는 옵티마이저 함수 생성
         self.optimizer = AdamOptimizer(self.lr, use_locking=True)
 
+        # 텐서보드 설정
         self.writer = tf.summary.create_file_writer('summary/breakout_a3c')
+        # 학습된 글로벌신경망 모델을 저장할 경로 설정
         self.model_path = os.path.join(os.getcwd(), 'save_model', 'model')
 
     # 쓰레드를 만들어 학습을 하는 함수
     def train(self):
-
         # 쓰레드 수 만큼 Runner 클래스 생성
         runners = [Runner(self.action_size, self.state_size,
                           self.global_model, self.optimizer,
                           self.discount_factor, self.env_name,
                           self.writer) for i in range(self.threads)]
 
-        # 각 쓰레드 시작
+        # 각 쓰레드 시정
         for i, runner in enumerate(runners):
             print("Start worker #{:d}".format(i))
             runner.start()
@@ -87,6 +90,7 @@ class A3CAgent():
             time.sleep(60 * 10)
 
 
+# 액터러너 클래스 (쓰레드)
 class Runner(threading.Thread):
     global_episode = 0
 
@@ -94,6 +98,7 @@ class Runner(threading.Thread):
                  optimizer, discount_factor, env_name, writer):
         threading.Thread.__init__(self)
 
+        # A3CAgent 클래스에서 넘겨준 하이준 파라미터 설정
         self.action_size = action_size
         self.state_size = state_size
         self.global_model = global_model
@@ -102,26 +107,29 @@ class Runner(threading.Thread):
 
         self.states, self.actions, self.rewards = [], [], []
 
+        # 환경, 로컬신경망, 텐서보드 생성
         self.local_model = ActorCritic(action_size, state_size)
         self.env = gym.make(env_name)
         self.writer = writer
 
+        # 학습 정보를 기록할 변수            
         self.avg_p_max = 0
         self.avg_loss = 0
-
+        # k-타임스텝 값 설정
         self.t_max = 20
         self.t = 0
-
+        # 불필요한 행동을 줄여주기 위한 dictionary
         self.action_dict = {0:1, 1:2, 2:3, 3:3}
-
+    
+    # 텐서보드에 학습 정보를 기록
     def draw_tensorboard(self, score, step, e):
         avg_p_max = self.avg_p_max / float(step)
-
         with self.writer.as_default():
             tf.summary.scalar('Total Reward/Episode', score, step=e)
             tf.summary.scalar('Average Max Prob/Episode', avg_p_max, step=e)
             tf.summary.scalar('Duration/Episode', step, step=e)
 
+    # 정책신경망의 출력을 받아 확률적으로 행동을 선택
     def get_action(self, history):
         history = np.float32(history / 255.)
         policy = self.local_model(history)[0][0]
@@ -137,6 +145,7 @@ class Runner(threading.Thread):
         self.actions.append(act)
         self.rewards.append(reward)
 
+    # k-타임스텝의 prediction 계산
     def discounted_prediction(self, rewards, done):
         discounted_prediction = np.zeros_like(rewards)
         running_add = 0
@@ -150,7 +159,8 @@ class Runner(threading.Thread):
             running_add = running_add * self.discount_factor + rewards[t]
             discounted_prediction[t] = running_add
         return discounted_prediction
-
+    
+    # 저장된 샘플들로 A3C의 오류함수를 계산
     def compute_loss(self, done):
 
         discounted_prediction = self.discounted_prediction(self.rewards, done)
@@ -173,18 +183,18 @@ class Runner(threading.Thread):
         action = tf.convert_to_tensor(self.actions, dtype=tf.float32)
         policy_prob = tf.nn.softmax(policy)
         action_prob = tf.reduce_sum(action * policy_prob, axis=1, keepdims=True)
-        cross_entropy = tf.math.log(action_prob + 1e-10) * tf.stop_gradient(advantages)
-        cross_entropy = -tf.reduce_sum(cross_entropy)
+        cross_entropy = -tf.math.log(action_prob + 1e-10) * tf.stop_gradient(advantages)
+        policy_loss = tf.reduce_sum(cross_entropy)
 
         entropy = tf.reduce_sum(policy_prob * tf.math.log(policy_prob + 1e-10), axis=1)
         entropy = tf.reduce_sum(entropy)
-
-        policy_loss = cross_entropy + 0.01 * entropy
+        policy_loss += 0.01 * entropy
 
         total_loss = 0.5 * value_loss + policy_loss
 
         return total_loss
 
+    # 로컬신경망을 통해 그레이디언트를 계산하고, 글로벌 신경망을 계산된 그레이디언트로 업데이트
     def train_model(self, done):
 
         global_params = self.global_model.trainable_variables
@@ -193,17 +203,22 @@ class Runner(threading.Thread):
         with tf.GradientTape() as tape:
             total_loss = self.compute_loss(done)
 
+        # 로컬신경망의 그레이디언트 계산
         grads = tape.gradient(total_loss, local_params)
+        # 안정적인 학습을 위한 그레이디언트 클리핑
         grads, _ = tf.clip_by_global_norm(grads, 40.0)
+        # 로컬신경망의 오류함수를 줄이는 방향으로 글로벌신경망을 업데이트
         self.optimizer.apply_gradients(zip(grads, global_params))
-
+        # 로컬신경망의 가중치를 글로벌신경망의 가중치로 업데이트
         self.local_model.set_weights(self.global_model.get_weights())
+        # 업데이트 후 저장된 샘플 초기화
         self.states, self.actions, self.rewards = [], [], []
 
     def run(self):
+        # 액터러너끼리 공유해야하는 글로벌 변수
         global episode, score_avg, score_max
+        
         step = 0
-
         while episode < num_episode:
             done = False
             dead = False
@@ -211,9 +226,11 @@ class Runner(threading.Thread):
             score, start_life = 0, 5
             observe = self.env.reset()
 
+            # 랜덤으로 뽑힌 값 만큼의 프레임동안 움직이지 않음
             for _ in range(random.randint(1, 30)):
                 observe, _, _, _ = self.env.step(1)
 
+            # 프레임을 전처리 한 후 4개의 상태를 쌓아서 입력값으로 사용.
             state = pre_processing(observe)
             history = np.stack([state, state, state, state], axis=2)
             history = np.reshape([history], (1, 84, 84, 4))
@@ -230,7 +247,7 @@ class Runner(threading.Thread):
                 if dead:
                     action, real_action, dead = 0, 1, False
 
-                # 선택한 행동으로 한 스텝을 실행
+                # 선택한 행동으로 환경에서 한 타임스텝 진행
                 observe, reward, done, info = self.env.step(real_action)
 
                 # 각 타임스텝마다 상태 전처리
@@ -238,9 +255,8 @@ class Runner(threading.Thread):
                 next_state = np.reshape([next_state], (1, 84, 84, 1))
                 next_history = np.append(next_state, history[:, :, :, :3], axis=3)
 
-                history_input = np.float32(history / 255.)
-                action_prob = tf.nn.softmax(self.local_model(history_input)[0])
-                self.avg_p_max += np.amax(action_prob[0].numpy())
+                # 정책확률의 최대값
+                self.avg_p_max += np.amax(policy.numpy())
 
                 if start_life > info['ale.lives']:
                     dead = True
@@ -289,5 +305,5 @@ def pre_processing(observe):
 
 
 if __name__ == "__main__":
-    global_agent = A3CAgent(action_size=3)
+    global_agent = A3CAgent(action_size=3, env_name="BreakoutDeterministic-v4")
     global_agent.train()

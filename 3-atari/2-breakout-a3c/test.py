@@ -1,7 +1,4 @@
-import os
 import gym
-import time
-import threading
 import random
 import numpy as np
 import tensorflow as tf
