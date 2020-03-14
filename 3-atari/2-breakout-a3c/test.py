@@ -35,6 +35,8 @@ class ActorCritic(tf.keras.Model):
         return policy, value
 
 # 브레이크아웃에서의 테스트를 위한 A3C 에이전트 클래스
+
+
 class A3CTestAgent:
     def __init__(self, action_size, state_size, model_path):
         self.action_size = action_size
@@ -74,7 +76,7 @@ if __name__ == "__main__":
 
         score, start_life = 0, 5
         observe = env.reset()
-        
+
         # 랜덤으로 뽑힌 값 만큼의 프레임동안 움직이지 않음
         for _ in range(random.randint(1, 30)):
             observe, _, _, _ = env.step(1)
@@ -87,7 +89,7 @@ if __name__ == "__main__":
         while not done:
             if render:
                 env.render()
-                
+
             # 정책 확률에 따라 행동을 선택
             action, policy = agent.get_action(history)
             # 1: 정지, 2: 왼쪽, 3: 오른쪽
