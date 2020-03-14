@@ -177,20 +177,20 @@ class Runner(threading.Thread):
 
         # 가치 신경망 업데이트
         advantages = discounted_prediction - values
-        value_loss = 0.5 * tf.reduce_sum(tf.square(advantages))
+        critic_loss = 0.5 * tf.reduce_sum(tf.square(advantages))
 
         # 정책 신경망 업데이트
         action = tf.convert_to_tensor(self.actions, dtype=tf.float32)
         policy_prob = tf.nn.softmax(policy)
         action_prob = tf.reduce_sum(action * policy_prob, axis=1, keepdims=True)
-        cross_entropy = -tf.math.log(action_prob + 1e-10) * tf.stop_gradient(advantages)
-        policy_loss = tf.reduce_sum(cross_entropy)
+        cross_entropy = - tf.math.log(action_prob + 1e-10)
+        actor_loss = tf.reduce_sum(cross_entropy * tf.stop_gradient(advantages))
 
         entropy = tf.reduce_sum(policy_prob * tf.math.log(policy_prob + 1e-10), axis=1)
         entropy = tf.reduce_sum(entropy)
-        policy_loss += 0.01 * entropy
+        actor_loss += 0.01 * entropy
 
-        total_loss = 0.5 * value_loss + policy_loss
+        total_loss = 0.5 * critic_loss + actor_loss
 
         return total_loss
 
